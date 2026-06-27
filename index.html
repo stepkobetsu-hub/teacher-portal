@@ -14,29 +14,29 @@
 <body>
   <main class="app">
     <section id="homePage" class="page home-page">
-      <div class="pop-hero">
-        <div class="confetti c1"></div>
-        <div class="confetti c2"></div>
-        <div class="confetti c3"></div>
-        <div class="stripe"></div>
-        <img src="images/logo.jpg" class="home-logo" alt="個別指導STEP">
-        <div class="portal-icon">
-          <img src="images/app-icon.png" alt="">
+      <div class="home-header">
+        <img src="images/logo.jpg" class="step-logo" alt="個別指導STEP">
+        <div class="title-block">
+          <div class="mini-label">Teacher Portal</div>
+          <h1>講師ポータル</h1>
+          <p id="greetingText">今日も一緒にがんばりましょう！</p>
         </div>
-        <h1>STEP</h1>
-        <h2>講師ポータル</h2>
-        <p id="greetingText">今日も一緒にがんばりましょう！</p>
       </div>
 
-      <div class="date-pill">
-        <span>📅</span>
+      <div class="date-card">
+        <span class="date-icon">📅</span>
         <strong id="homeDate">----</strong>
       </div>
 
-      <div class="menu colorful">
+      <div class="quick-note">
+        <span>お知らせ</span>
+        <p>授業後は「出勤確認」と「入退くん」を忘れずにお願いします。</p>
+      </div>
+
+      <div class="menu">
         <button class="menu-card green" onclick="showAttendance()">
           <span class="icon">📝</span>
-          <span>
+          <span class="menu-text">
             <strong>出勤確認</strong>
             <small>授業後の出勤報告はこちら</small>
           </span>
@@ -45,7 +45,7 @@
 
         <button class="menu-card blue" onclick="showNyutaikun()">
           <span class="icon">📱</span>
-          <span>
+          <span class="menu-text">
             <strong>入退くんQR</strong>
             <small>来た時・帰る時にタブレットへ</small>
           </span>
@@ -54,7 +54,7 @@
 
         <button class="menu-card purple disabled">
           <span class="icon">💰</span>
-          <span>
+          <span class="menu-text">
             <strong>給与明細</strong>
             <small>準備中</small>
           </span>
@@ -63,7 +63,7 @@
 
         <button class="menu-card orange" onclick="showAdminQr()">
           <span class="icon">⚙️</span>
-          <span>
+          <span class="menu-text">
             <strong>管理者：QR登録</strong>
             <small>講師QRをQ列へ保存します</small>
           </span>
@@ -71,14 +71,8 @@
         </button>
       </div>
 
-      <div class="town">
-        <span class="cloud cloud1"></span>
-        <span class="cloud cloud2"></span>
-        <span class="house h1"></span>
-        <span class="house h2"></span>
-        <span class="house h3"></span>
-        <span class="tree t1"></span>
-        <span class="tree t2"></span>
+      <div class="simple-town">
+        <span class="tree"></span><span class="house h1"></span><span class="house h2"></span><span class="house h3"></span><span class="tree small"></span>
       </div>
 
       <div class="footer-note">© 個別指導STEP / Teacher Portal</div>
