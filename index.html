@@ -8,64 +8,64 @@
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="images/app-icon.png">
   <link rel="icon" href="images/favicon.png">
-  <meta name="theme-color" content="#2563eb">
+  <meta name="theme-color" content="#0057d9">
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 </head>
 <body>
   <main class="app">
     <section id="homePage" class="page home-page">
-      <section class="selected-hero">
-        <img src="images/logo.jpg" class="selected-logo" alt="個別指導STEP">
-        <span class="selected-sun"></span>
-        <span class="sparkle sp1"></span><span class="sparkle sp2"></span><span class="sparkle sp3"></span>
-        <div class="selected-title">
-          <h1>講師ポータル</h1>
-          <p id="greetingText">おはようございます！</p>
-        </div>
+      <section class="final-hero">
+        <img src="images/logo.jpg" class="final-logo" alt="個別指導STEP">
+        <span class="sun"></span>
+        <span class="decor d1"></span><span class="decor d2"></span><span class="decor d3"></span><span class="decor d4"></span>
+        <h1>講師ポータル</h1>
+        <p id="greetingText">おはようございます！</p>
       </section>
 
-      <div class="selected-date">
+      <div class="final-date">
         <span>📅</span>
         <strong id="homeDate">----</strong>
       </div>
 
-      <div class="selected-grid">
-        <button class="selected-tile green" onclick="showAttendance()">
+      <div class="final-grid">
+        <button class="final-tile green" onclick="showAttendance()">
           <span class="tile-icon">📝</span>
           <span><strong>出勤確認</strong><small>授業後の<br>出勤報告はこちら</small></span>
           <b>›</b>
         </button>
 
-        <button class="selected-tile blue" onclick="showNyutaikun()">
+        <button class="final-tile blue" onclick="showNyutaikun()">
           <span class="tile-icon">📱</span>
           <span><strong>入退くんQR</strong><small>来た時・帰る時に<br>タブレットへ</small></span>
           <b>›</b>
         </button>
 
-        <button class="selected-tile purple disabled">
+        <button class="final-tile purple disabled">
           <span class="tile-icon">💰</span>
           <span><strong>給与明細</strong><small>給与明細を<br>確認できます</small></span>
           <b>›</b>
         </button>
 
-        <button class="selected-tile orange" onclick="showAdminQr()">
+        <button class="final-tile orange" onclick="showAdminQr()">
           <span class="tile-icon">⚙️</span>
           <span><strong>管理者QR登録</strong><small>講師QRを<br>登録します</small></span>
           <b>›</b>
         </button>
       </div>
 
-      <div class="selected-notice">
+      <div class="final-notice">
         <span>🔔</span>
         <div><b>お知らせ</b><p>授業後は「出勤確認」と「入退くん」を忘れずにお願いします。</p></div>
+        <em>›</em>
       </div>
 
-      <div class="selected-town">
+      <div class="final-town">
         <span class="cloud c1"></span><span class="cloud c2"></span>
-        <span class="house h1"></span><span class="house h2"></span><span class="house h3"></span><span class="house h4"></span><span class="house h5"></span>
-        <span class="tree t1"></span><span class="tree t2"></span><span class="tree t3"></span>
+        <span class="bird b1">⌁</span><span class="bird b2">⌁</span>
+        <span class="building h1"></span><span class="building h2"></span><span class="building h3"></span><span class="building h4"></span><span class="building h5"></span><span class="building h6"></span>
+        <span class="tree t1"></span><span class="tree t2"></span><span class="tree t3"></span><span class="tree t4"></span>
       </div>
-      <div class="selected-footer">© 個別指導STEP / Teacher Portal</div>
+      <div class="final-footer">© 個別指導STEP 講師ポータル</div>
     </section>
 
     <section id="loginPage" class="page hidden">

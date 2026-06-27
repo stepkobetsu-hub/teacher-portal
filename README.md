@@ -1,3 +1,3 @@
-# teacher-portal v10 selected
+# teacher-portal v11 final fixed
 
-選択済みトップ画面と選択済みファビコンを反映。
+指定されたデザインに固定。ファビコンは指定画像を使用。
