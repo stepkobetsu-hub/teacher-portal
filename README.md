@@ -1,21 +1,9 @@
 # teacher-portal
 
-個別指導STEP 講師ポータル Ver.1
+個別指導STEP 講師ポータル
 
-## ファイル
-
-- index.html
-- style.css
-- script.js
-- images/logo.jpg
-- images/nyutaikun.png
-- Code.gs（Apps Script用）
-
-## 設定
-
-1. Apps ScriptにCode.gsを貼り付ける
-2. ウェブアプリとしてデプロイする
-   - 実行ユーザー：自分
-   - アクセスできるユーザー：全員
-3. 発行されたURLをscript.jsのAPI_URLへ貼る
-4. GitHubへindex.html / style.css / script.js / imagesをアップロード
+## Ver.3
+- 出勤確認
+- 入退くんQR表示
+- 講師コード記憶
+- ログアウト・コード削除
