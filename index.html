@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>講師出勤確認｜個別指導STEP</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <section id="loginArea" class="card">
+      <img src="images/logo.jpg" alt="個別指導STEP" class="logo">
+      <h1>講師出勤確認</h1>
+      <p class="sub">講師コードを入力してください</p>
+
+      <label for="code">講師コード</label>
+      <input id="code" type="text" inputmode="numeric" placeholder="例：7085">
+      <button id="loginBtn">ログイン</button>
+      <div id="loginMsg" class="notice hidden"></div>
+    </section>
+
+    <section id="formArea" class="card hidden">
+      <div id="hello" class="hello"></div>
+      <div id="headerName" class="headerName"></div>
+
+      <label>出勤日</label>
+      <div class="dateBox">
+        <div id="dateText" class="dateText"></div>
+        <input id="workDate" type="date">
+      </div>
+
+      <label>本日の担当授業</label>
+      <div class="checks">
+        <label><input type="checkbox" value="13:00～14:15"><span>13:00～14:15</span></label>
+        <label><input type="checkbox" value="14:20～15:35"><span>14:20～15:35</span></label>
+        <label><input type="checkbox" value="15:45～17:00"><span>15:45～17:00</span></label>
+        <label><input type="checkbox" value="17:10～18:25"><span>17:10～18:25</span></label>
+        <label><input type="checkbox" value="18:35～19:50"><span>18:35～19:50</span></label>
+        <label><input type="checkbox" value="20:00～21:15"><span>20:00～21:15</span></label>
+      </div>
+
+      <label>本日の担当コマ数</label>
+      <select id="koma">
+        <option value="">選択してください</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+        <option value="その他">その他</option>
+      </select>
+
+      <div id="otherBox" class="hidden">
+        <label>その他のコマ数</label>
+        <input id="komaOther" type="text" placeholder="例：1.5">
+      </div>
+
+      <label>勤務場所</label>
+      <select id="place">
+        <option value="">選択してください</option>
+        <option value="神領校">神領校</option>
+        <option value="大手町校">大手町校</option>
+        <option value="その他">その他</option>
+      </select>
+
+      <label>その他・備考</label>
+      <textarea id="memo" placeholder="必要な場合のみ入力"></textarea>
+
+      <button id="submitBtn">送信する</button>
+      <div id="sending" class="sending hidden">📩 送信しています...</div>
+    </section>
+
+    <section id="completeArea" class="card hidden">
+      <div class="doneBox">
+        <div class="doneTitle">送信完了しました</div>
+        <div id="completeMessage" class="doneSub"></div>
+        <div id="randomMessage" class="randomMessage"></div>
+        <div class="nyutaikunBox">
+          <div class="nyutaikunTitle">入退くんも忘れずにね！</div>
+          <div class="tabletIllust">
+            <div class="tablet">
+              <div class="tabletHead">入退くん</div>
+              <div class="qr">▦</div>
+              <p>QRコードを読み取ってください</p>
+            </div>
+            <div class="phone">▦</div>
+          </div>
+        </div>
+        <button id="backBtn">続けて入力する</button>
+      </div>
+    </section>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
