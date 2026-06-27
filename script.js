@@ -1,4 +1,3 @@
-// Apps Scriptを「ウェブアプリ」としてデプロイしたURL
 const API_URL = 'https://script.google.com/macros/s/AKfycbwP-pEDbbHB-Ec2xO7BFiVYqwpveTnNVmPJkNV08MPD8iAHHq4S7zPyVxDwFEmaHI9-/exec';
 
 let teacher = null;
@@ -14,7 +13,16 @@ window.addEventListener('DOMContentLoaded', () => {
     if (nyuEl) nyuEl.value = savedCode;
   }
   setToday();
+  setHomeDate();
 });
+
+function setHomeDate() {
+  const el = document.getElementById('homeDate');
+  if (!el) return;
+  const d = new Date();
+  const weeks = ['日','月','火','水','木','金','土'];
+  el.textContent = `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日（${weeks[d.getDay()]}）`;
+}
 
 function showPage(id) {
   stopQrScan();
@@ -84,6 +92,17 @@ function jsonp(params) {
 
     document.body.appendChild(script);
   });
+}
+
+function showToast(title, text, icon = '✅') {
+  document.getElementById('toastIcon').textContent = icon;
+  document.getElementById('toastTitle').textContent = title;
+  document.getElementById('toastText').textContent = text || '';
+  document.getElementById('toast').classList.remove('hidden');
+}
+
+function hideToast() {
+  document.getElementById('toast').classList.add('hidden');
 }
 
 async function login() {
@@ -291,8 +310,7 @@ async function startQrScan() {
       const code = jsQR(imageData.data, canvas.width, canvas.height);
       if (code && code.data) {
         document.getElementById('adminQrData').value = code.data;
-        msg.textContent = 'QRを読み取りました。講師コードを確認して保存してください。';
-        msg.classList.remove('hidden');
+        showToast('QRを読み取りました', '講師コードを確認して、Q列へ保存してください。', '📷');
         stopQrScan();
       }
     }, 350);
@@ -322,8 +340,7 @@ async function saveAdminQrData() {
   msg.classList.add('hidden');
 
   if (!code || !qrData) {
-    msg.textContent = '講師コードとQRデータを入力してください。';
-    msg.classList.remove('hidden');
+    showToast('未入力です', '講師コードとQRデータを入力してください。', '⚠️');
     return;
   }
 
@@ -331,11 +348,13 @@ async function saveAdminQrData() {
     const res = await jsonp({ action: 'saveQrData', code, qrData });
     if (!res.ok) throw new Error(res.message || '保存できませんでした。');
 
+    showToast('Q列へ保存しました', (res.name || code) + ' の入退くんQRデータを保存しました。', '✅');
     msg.textContent = (res.name || code) + ' のQRデータを講師マスターQ列に保存しました。';
     msg.classList.remove('hidden');
     document.getElementById('adminCode').value = '';
     document.getElementById('adminQrData').value = '';
   } catch (err) {
+    showToast('保存できませんでした', err.message || '保存できませんでした。', '⚠️');
     msg.textContent = err.message || '保存できませんでした。';
     msg.classList.remove('hidden');
   }

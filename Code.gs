@@ -37,27 +37,16 @@ function getTeacherApi_(code) {
   const values = sh.getDataRange().getValues();
 
   for (let i = 1; i < values.length; i++) {
-    const masterCode = String(values[i][0] || '').trim(); // A列
+    const masterCode = String(values[i][0] || '').trim();
     if (masterCode === code) {
-      const name = String(values[i][1] || '').trim();     // B列
-      const email = String(values[i][15] || '').trim();   // P列
-      const qrData = String(values[i][16] || '').trim();  // Q列
-      return {
-        ok: true,
-        teacher: {
-          code,
-          name,
-          email,
-          qrData
-        }
-      };
+      const name = String(values[i][1] || '').trim();
+      const email = String(values[i][15] || '').trim();
+      const qrData = String(values[i][16] || '').trim();
+      return { ok: true, teacher: { code, name, email, qrData } };
     }
   }
 
-  return {
-    ok: false,
-    message: '講師コードが見つかりません。名前がない場合は、すぐに申し出てください。'
-  };
+  return { ok: false, message: '講師コードが見つかりません。名前がない場合は、すぐに申し出てください。' };
 }
 
 function submitAttendanceApi_(data) {
@@ -66,7 +55,6 @@ function submitAttendanceApi_(data) {
 
   const teacher = teacherRes.teacher;
   const sh = SpreadsheetApp.openById(RESPONSE_SS_ID).getSheetByName(RESPONSE_SHEET);
-
   const koma = data.koma === 'その他' ? data.komaOther : data.koma;
 
   sh.appendRow([
@@ -96,18 +84,10 @@ function saveQrDataApi_(code, qrData) {
   for (let i = 1; i < values.length; i++) {
     const masterCode = String(values[i][0] || '').trim();
     if (masterCode === code) {
-      sh.getRange(i + 1, 17).setValue(qrData); // Q列
-      return {
-        ok: true,
-        code,
-        name: String(values[i][1] || '').trim(),
-        qrData
-      };
+      sh.getRange(i + 1, 17).setValue(qrData);
+      return { ok: true, code, name: String(values[i][1] || '').trim(), qrData };
     }
   }
 
-  return {
-    ok: false,
-    message: '講師コードが講師マスターに見つかりません。'
-  };
+  return { ok: false, message: '講師コードが講師マスターに見つかりません。' };
 }

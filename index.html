@@ -2,18 +2,32 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>個別指導STEP 講師ポータル</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="images/app-icon.png">
+  <link rel="icon" href="images/app-icon.png">
+  <meta name="theme-color" content="#2563eb">
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 </head>
 <body>
   <main class="app">
-    <section id="homePage" class="page">
-      <div class="hero compact">
+    <section id="homePage" class="page home-page">
+      <div class="top-hero">
         <img src="images/logo.jpg" class="logo" alt="個別指導STEP">
-        <h1>講師ポータル</h1>
-        <p>個別指導STEP</p>
+        <div class="hero-title">
+          <h1>講師ポータル</h1>
+          <p>授業後の確認・入退くんQRはこちら</p>
+        </div>
+      </div>
+
+      <div class="today-panel">
+        <div>
+          <span class="today-label">TODAY</span>
+          <strong id="homeDate">----</strong>
+        </div>
+        <span class="badge">STEP</span>
       </div>
 
       <div class="menu">
@@ -25,11 +39,11 @@
           </span>
         </button>
 
-        <button class="menu-card" onclick="showNyutaikun()">
+        <button class="menu-card qr" onclick="showNyutaikun()">
           <span class="icon">📱</span>
           <span>
-            <strong>入退くん</strong>
-            <small>自分のQRコードを表示</small>
+            <strong>入退くんQR</strong>
+            <small>来た時・帰る時にタブレットへ</small>
           </span>
         </button>
 
@@ -45,10 +59,12 @@
           <span class="icon">⚙️</span>
           <span>
             <strong>管理者：QR登録</strong>
-            <small>講師マスターQ列へ登録</small>
+            <small>紙QRを読み取り、Q列へ保存</small>
           </span>
         </button>
       </div>
+
+      <div class="footer-note">© 個別指導STEP / Teacher Portal</div>
     </section>
 
     <section id="loginPage" class="page hidden">
@@ -177,6 +193,15 @@
       </div>
     </section>
   </main>
+
+  <div id="toast" class="toast hidden">
+    <div class="toast-card">
+      <div id="toastIcon" class="toast-icon">✅</div>
+      <div id="toastTitle" class="toast-title">完了</div>
+      <div id="toastText" class="toast-text"></div>
+      <button onclick="hideToast()">OK</button>
+    </div>
+  </div>
 
   <script src="script.js"></script>
 </body>

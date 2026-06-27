@@ -1,0 +1,15 @@
+{
+  "name": "個別指導STEP 講師ポータル",
+  "short_name": "STEP講師",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#eef6ff",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "images/app-icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
