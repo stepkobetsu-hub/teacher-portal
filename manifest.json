@@ -3,8 +3,8 @@
   "short_name": "STEP講師",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#f4fbff",
-  "theme_color": "#2563eb",
+  "background_color": "#ffffff",
+  "theme_color": "#0ea5e9",
   "icons": [
     {
       "src": "images/app-icon-192.png",
