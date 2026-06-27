@@ -1,3 +1,3 @@
-# teacher-portal v11 summer
+# teacher-portal v12 compact
 
-トップページに「夏休み出勤可能日登録」ボタンを追加。
+添付スクリーンショットに近いコンパクトなトップページ。夏休み出勤可能日登録ボタン追加。
