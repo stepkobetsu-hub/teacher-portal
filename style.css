@@ -158,3 +158,26 @@ button:disabled { background: #94a3b8; cursor: not-allowed; }
   .hello { font-size: 25px; margin-top: 110px; }
   .checks label { font-size: 18px; padding: 9px 10px; }
 }
+
+
+/* ===== 2026-06-27 compact update ===== */
+.wrap { padding: 14px; }
+.card { margin-top: 12px; padding: 18px; }
+.home-card { padding-top: 16px; }
+.logo { width: min(260px, 82%); margin: 0 auto 12px; }
+.small-logo { width: min(230px, 78%); margin-bottom: 8px; }
+.portal-title { font-size: 27px; margin-top: 2px; }
+.portal-sub { margin: 3px 0 14px; }
+.menu-btn { padding: 11px 14px; margin-top: 10px; }
+.menu-icon { font-size: 24px; width: 30px; }
+.menu-btn strong { font-size: 17px; }
+.menu-btn small { font-size: 13px; margin-top: 2px; }
+@media (max-width: 420px) {
+  .wrap { padding: 10px; }
+  .card { padding: 16px; margin-top: 10px; }
+  .logo { width: min(235px, 78%); margin-bottom: 10px; }
+  .small-logo { width: min(210px, 74%); }
+  .portal-title { font-size: 25px; }
+  .portal-sub { margin-bottom: 12px; }
+  .menu-btn { padding: 10px 12px; margin-top: 9px; }
+}
