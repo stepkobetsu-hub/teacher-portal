@@ -1,84 +1,160 @@
+* { box-sizing: border-box; }
 body {
   margin: 0;
-  font-family: "Arial", "Hiragino Sans", sans-serif;
-  background: linear-gradient(135deg, #eef5ff, #ffffff);
+  font-family: Arial, "Hiragino Sans", "Yu Gothic", sans-serif;
   color: #1f2937;
+  background: linear-gradient(135deg, #eaf2ff, #ffffff 55%, #fff7f7);
+  min-height: 100vh;
 }
-.app { max-width: 520px; margin: 0 auto; padding: 22px; }
+.app-bg {
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at top left, rgba(37,99,235,0.10), transparent 34%),
+    radial-gradient(circle at bottom right, rgba(220,38,38,0.08), transparent 30%);
+  pointer-events: none;
+}
+.wrap { max-width: 520px; margin: 0 auto; padding: 22px; position: relative; }
 .card {
   background: #fff;
-  border-radius: 22px;
+  border-radius: 24px;
   padding: 24px;
-  box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+  box-shadow: 0 16px 36px rgba(15,23,42,0.14);
   margin-top: 24px;
+  border: 1px solid rgba(219,234,254,0.9);
 }
-.logo { width: 82%; max-width: 360px; display: block; margin: 8px auto 18px; }
-h1 { text-align: center; font-size: 27px; margin: 8px 0; color: #1d2b63; }
-.sub { text-align: center; color: #6b7280; margin-bottom: 22px; }
-label { font-weight: bold; display: block; margin-top: 18px; margin-bottom: 6px; }
+.hidden { display: none !important; }
+.logo { width: min(360px, 100%); display: block; margin: 8px auto 20px; border-radius: 8px; }
+.small-logo { width: min(300px, 92%); margin-bottom: 12px; }
+h1 { text-align: center; font-size: 28px; margin: 10px 0 8px; color: #1d4ed8; }
+.school { text-align: center; font-size: 18px; font-weight: 700; color: #374151; margin-bottom: 20px; }
+.portal-title { text-align: center; font-size: 30px; font-weight: 800; color: #1d4ed8; margin-top: 4px; }
+.portal-sub { text-align: center; color: #6b7280; font-weight: 700; margin: 4px 0 22px; }
+label { font-weight: 800; display: block; margin: 18px 0 7px; }
 input, select, textarea {
-  width: 100%; box-sizing: border-box; padding: 13px; font-size: 17px;
-  border-radius: 12px; border: 1px solid #cbd5e1; background: #fff;
+  width: 100%;
+  padding: 13px;
+  font-size: 17px;
+  border-radius: 12px;
+  border: 1px solid #cbd5e1;
+  background: #fff;
 }
-textarea { min-height: 80px; }
+textarea { min-height: 82px; resize: vertical; }
 button {
-  width: 100%; border: none; border-radius: 12px; padding: 12px 16px;
-  font-size: 17px; font-weight: bold; margin-top: 20px;
-  background: #1d4ed8; color: white; cursor: pointer; transition: 0.2s;
+  width: 100%;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 17px;
+  font-weight: 800;
+  margin-top: 20px;
+  background: #2563eb;
+  color: white;
+  cursor: pointer;
+  transition: 0.2s;
 }
-button:hover { background: #1e40af; }
+button:hover { background: #1d4ed8; }
 button:disabled { background: #94a3b8; cursor: not-allowed; }
-.notice { background: #fff7ed; color: #9a3412; padding: 12px; border-radius: 12px; margin-top: 18px; font-size: 14px; }
-.hidden { display: none; }
+.sub-btn { background: #eef2ff; color: #1d4ed8; margin-top: 10px; }
+.sub-btn:hover { background: #dbeafe; }
+.menu-btn {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  background: #f8fbff;
+  color: #172554;
+  border: 2px solid #dbeafe;
+  padding: 14px 16px;
+  margin-top: 12px;
+}
+.menu-btn:hover { background: #eff6ff; }
+.menu-btn.disabled { opacity: 0.72; cursor: default; }
+.menu-btn.disabled:hover { background: #f8fbff; }
+.menu-icon { font-size: 28px; width: 34px; text-align: center; }
+.menu-btn strong { display: block; font-size: 18px; }
+.menu-btn small { display: block; margin-top: 4px; color: #64748b; font-weight: 700; }
+.notice { background: #fff7ed; color: #9a3412; padding: 12px; border-radius: 12px; margin-top: 16px; font-size: 14px; font-weight: 700; }
 .hello {
-  font-size: 29px; font-weight: bold; text-align: center; color: #1d4ed8;
-  background: #ffffff; border: 3px solid #bfdbfe; border-radius: 22px;
-  padding: 28px 16px; margin: 150px 0 60px;
+  font-size: 30px;
+  font-weight: 900;
+  text-align: center;
+  color: #2563eb;
+  background: #fff;
+  border: 3px solid #bfdbfe;
+  border-radius: 22px;
+  padding: 28px 14px;
+  margin: 140px 0 58px;
   box-shadow: 0 10px 25px rgba(0,0,0,0.12);
   animation: hideHello 3.2s forwards;
 }
 @keyframes hideHello {
   0% { opacity: 1; }
-  90% { opacity: 1; }
+  88% { opacity: 1; }
   100% { opacity: 0; height: 0; padding: 0; margin: 0; overflow: hidden; }
 }
 .headerName {
-  background: #eff6ff; color: #1d4ed8; padding: 12px; border-radius: 14px;
-  font-weight: bold; text-align: center; margin-bottom: 18px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  padding: 12px;
+  border-radius: 14px;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 18px;
 }
 .dateBox {
-  position: relative; border: 2px solid #93c5fd; border-radius: 14px;
-  padding: 16px; background: #f8fbff;
+  position: relative;
+  border: 2px solid #93c5fd;
+  border-radius: 14px;
+  padding: 15px;
+  background: #f8fbff;
 }
 .dateBox input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
-.dateText { font-size: 19px; font-weight: bold; color: #111827; text-align: center; }
+.dateText { font-size: 19px; font-weight: 900; color: #111827; text-align: center; }
 .checks label {
-  display: flex; align-items: center; gap: 11px;
-  margin: 8px 0; padding: 9px 12px;
-  font-size: 19px; font-weight: bold;
-  background: #f5f9ff; border: 2px solid #dbeafe;
-  border-radius: 12px; cursor: pointer; transition: 0.2s; user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin: 8px 0;
+  padding: 9px 12px;
+  font-size: 19px;
+  font-weight: 800;
+  background: #f5f9ff;
+  border: 2px solid #dbeafe;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: 0.2s;
+  user-select: none;
 }
 .checks label:hover { background: #e0f2fe; }
 .checks input[type="checkbox"] {
-  width: 22px; height: 22px; accent-color: #1d4ed8; cursor: pointer; flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  accent-color: #2563eb;
+  cursor: pointer;
 }
-.sending { text-align: center; font-size: 19px; font-weight: bold; color: #1d4ed8; margin-top: 18px; }
-.doneBox { text-align: center; padding: 20px 8px; }
-.doneTitle { font-size: 26px; color: #16a34a; font-weight: bold; margin-bottom: 12px; }
-.doneSub { font-size: 17px; color: #374151; margin-bottom: 12px; line-height: 1.6; }
-.randomMessage { font-size: 19px; font-weight: bold; color: #1d4ed8; margin: 14px 0; }
-.nyutaikunBox { background: #fff7d6; border-radius: 18px; padding: 16px; margin: 20px 0; }
-.nyutaikunTitle { font-size: 24px; font-weight: bold; color: #1d4ed8; margin-bottom: 12px; }
-.tabletIllust { display: flex; align-items: center; justify-content: center; gap: 14px; }
-.tablet { width: 220px; background: white; border: 10px solid #1f2937; border-radius: 18px; overflow: hidden; box-shadow: 0 8px 18px rgba(0,0,0,0.18); }
-.tabletHead { background: #1d4ed8; color: white; font-weight: bold; padding: 8px; }
-.qr { font-size: 52px; margin: 12px 0 4px; }
-.tablet p { font-size: 12px; margin: 0 0 12px; }
-.phone { width: 58px; height: 100px; border: 7px solid #111827; border-radius: 14px; background: white; display: flex; align-items: center; justify-content: center; font-size: 32px; box-shadow: 0 8px 18px rgba(0,0,0,0.15); }
+.sending { text-align: center; font-size: 18px; font-weight: 800; color: #2563eb; margin-top: 16px; }
+.doneBox { text-align: center; padding: 18px 6px; }
+.doneMark {
+  width: 70px;
+  height: 70px;
+  margin: 0 auto 12px;
+  border-radius: 999px;
+  background: #16a34a;
+  color: white;
+  font-size: 44px;
+  line-height: 70px;
+  font-weight: 900;
+}
+.doneTitle { font-size: 26px; color: #16a34a; font-weight: 900; margin-bottom: 10px; }
+.doneSub { font-size: 17px; color: #374151; margin-bottom: 10px; line-height: 1.6; }
+.randomMessage { font-size: 19px; font-weight: 900; color: #2563eb; margin: 14px 0; }
+.doneImg { width: 100%; max-width: 420px; border-radius: 18px; margin: 18px auto; display: block; box-shadow: 0 10px 22px rgba(15,23,42,0.12); }
 @media (max-width: 420px) {
-  .app { padding: 14px; }
-  .card { padding: 20px; }
-  .checks label { font-size: 18px; }
-  .tablet { width: 190px; }
+  .wrap { padding: 14px; }
+  .card { padding: 18px; margin-top: 16px; border-radius: 20px; }
+  .portal-title { font-size: 26px; }
+  .hello { font-size: 25px; margin-top: 110px; }
+  .checks label { font-size: 18px; padding: 9px 10px; }
 }

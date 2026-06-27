@@ -4,31 +4,38 @@ const RESPONSE_SHEET = 'フォームの回答 1';
 const MASTER_SS_ID = '1L5aFDXAmfUDkBg8d7X3WqJgMhdMq5tM5sfUZ2G-M58E';
 const MASTER_SHEET = '講師マスター';
 
-function doPost(e) {
+function doGet(e) {
+  const p = e.parameter || {};
+  const callback = sanitizeCallback_(p.callback || 'callback');
+
+  let result;
   try {
-    const data = JSON.parse(e.postData.contents || '{}');
-    let result;
-
-    if (data.action === 'getTeacher') {
-      result = getTeacher(data.code);
-    } else if (data.action === 'submitAttendance') {
-      result = submitAttendance(data);
+    if (p.action === 'getTeacher') {
+      result = getTeacherForApi_(p.code);
+    } else if (p.action === 'submitAttendance') {
+      result = submitAttendanceForApi_(p);
     } else {
-      result = { ok: false, message: '不明な処理です。' };
+      result = { ok: false, message: 'actionが不正です。' };
     }
-
-    return ContentService
-      .createTextOutput(JSON.stringify(result))
-      .setMimeType(ContentService.MimeType.JSON);
   } catch (err) {
-    return ContentService
-      .createTextOutput(JSON.stringify({ ok: false, message: err.message }))
-      .setMimeType(ContentService.MimeType.JSON);
+    result = { ok: false, message: err.message || String(err) };
   }
+
+  return ContentService
+    .createTextOutput(callback + '(' + JSON.stringify(result) + ');')
+    .setMimeType(ContentService.MimeType.JAVASCRIPT);
 }
 
-function getTeacher(code) {
+function sanitizeCallback_(callback) {
+  callback = String(callback || 'callback');
+  if (/^[a-zA-Z_$][0-9a-zA-Z_$\.]*$/.test(callback)) return callback;
+  return 'callback';
+}
+
+function getTeacherForApi_(code) {
   code = String(code || '').trim();
+  if (!code) return { ok: false, message: '講師コードを入力してください。' };
+
   const sh = SpreadsheetApp.openById(MASTER_SS_ID).getSheetByName(MASTER_SHEET);
   const values = sh.getDataRange().getValues();
 
@@ -36,29 +43,47 @@ function getTeacher(code) {
     const masterCode = String(values[i][0]).trim();
     const name = String(values[i][1]).trim();
     const email = String(values[i][15]).trim();
-    if (masterCode === code) return { ok: true, code, name, email };
+
+    if (masterCode === code) {
+      return {
+        ok: true,
+        teacher: { code: masterCode, name, email }
+      };
+    }
   }
-  return { ok: false, message: '講師コードが見つかりません。名前がない場合は、すぐに申し出てください。' };
+
+  return {
+    ok: false,
+    message: '講師コードが見つかりません。名前がない場合は、すぐに申し出てください。'
+  };
 }
 
-function submitAttendance(data) {
-  const teacher = getTeacher(data.code);
-  if (!teacher.ok) throw new Error('講師コードが見つかりません。');
+function submitAttendanceForApi_(p) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
 
-  const sh = SpreadsheetApp.openById(RESPONSE_SS_ID).getSheetByName(RESPONSE_SHEET);
-  const lessons = Array.isArray(data.lessons) ? data.lessons.join(' / ') : data.lessons;
-  const koma = data.koma === 'その他' ? data.komaOther : data.koma;
+  try {
+    const teacherRes = getTeacherForApi_(p.code);
+    if (!teacherRes.ok) return teacherRes;
 
-  sh.appendRow([
-    new Date(),
-    teacher.code + ' ' + teacher.name,
-    data.workDate,
-    lessons,
-    koma,
-    data.memo || '',
-    data.place,
-    teacher.code
-  ]);
+    const teacher = teacherRes.teacher;
+    const sh = SpreadsheetApp.openById(RESPONSE_SS_ID).getSheetByName(RESPONSE_SHEET);
 
-  return { ok: true, name: teacher.name };
+    const koma = p.koma === 'その他' ? p.komaOther : p.koma;
+
+    sh.appendRow([
+      new Date(),
+      teacher.code + ' ' + teacher.name,
+      p.workDate || '',
+      p.lessons || '',
+      koma || '',
+      p.memo || '',
+      p.place || '',
+      teacher.code
+    ]);
+
+    return { ok: true, name: teacher.name };
+  } finally {
+    lock.releaseLock();
+  }
 }
