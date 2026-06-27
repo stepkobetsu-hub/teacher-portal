@@ -13,50 +13,66 @@
 </head>
 <body>
   <main class="app">
-    <section id="homePage" class="page home-page compact-home">
-      <div class="mini-hero">
-        <img src="images/app-icon.png" class="mini-appicon" alt="STEP講師">
-        <div>
-          <div class="mini-step">STEP</div>
-          <div class="mini-sub">講師ポータル</div>
+    <section id="homePage" class="page homePage">
+      <div class="finalHero">
+        <span class="sun"></span>
+        <span class="stripe"></span>
+        <span class="dot dot1"></span><span class="dot dot2"></span><span class="dot dot3"></span>
+        <div class="heroTop">
+          <img src="images/app-icon.png" class="heroIcon" alt="">
+          <div>
+            <div class="heroStep">STEP</div>
+            <div class="heroSub">講師ポータル</div>
+          </div>
+        </div>
+        <div class="wave"></div>
+      </div>
+
+      <div class="mainArea">
+        <div id="greetingText" class="mainMessage">今日も一緒にがんばりましょう！</div>
+
+        <div class="finalDate">
+          <span>📅</span>
+          <strong id="homeDate">----</strong>
+        </div>
+
+        <div class="finalMenu">
+          <button class="finalBtn green" onclick="showAttendance()">
+            <span class="circleIcon">📋</span>
+            <span><strong>出勤確認</strong><small>出席・退席を記録します</small></span>
+            <b>›</b>
+          </button>
+
+          <button class="finalBtn blue" onclick="showNyutaikun()">
+            <span class="circleIcon">▦</span>
+            <span><strong>入退くんQR</strong><small>入退くんのQRを表示します</small></span>
+            <b>›</b>
+          </button>
+
+          <button class="finalBtn yellow" onclick="openSummerSchedule()">
+            <span class="circleIcon">🌻</span>
+            <span><strong>夏休み出勤可能日登録</strong><small>夏期講習の出勤できる日を登録します</small></span>
+            <b>›</b>
+          </button>
+
+          <button class="finalBtn purple disabled">
+            <span class="circleIcon">💰</span>
+            <span><strong>給与明細</strong><small>給与明細を確認できます</small></span>
+            <b>›</b>
+          </button>
+
+          <button class="finalBtn teal" onclick="showAdminQr()">
+            <span class="circleIcon">⚙️</span>
+            <span><strong>管理者QR登録</strong><small>講師QRを登録します</small></span>
+            <b>›</b>
+          </button>
+        </div>
+
+        <div class="finalInfo">
+          <span>ℹ️</span>
+          <p>ご不明な点がありましたら、教室までお知らせください。</p>
         </div>
       </div>
-
-      <div class="mini-greeting">今日も一緒にがんばりましょう！</div>
-
-      <div class="mini-date">
-        <span>📅</span>
-        <strong id="homeDate">----</strong>
-      </div>
-
-      <div class="mini-menu">
-        <button class="mini-card green" onclick="showAttendance()">
-          <span>📝</span><div><b>出勤確認</b><small>授業後の出勤報告はこちら</small></div><em>›</em>
-        </button>
-
-        <button class="mini-card blue" onclick="showNyutaikun()">
-          <span>📱</span><div><b>入退くんQR</b><small>入退くんのQRを表示します</small></div><em>›</em>
-        </button>
-
-        <button class="mini-card yellow" onclick="openSummerSchedule()">
-          <span>🌻</span><div><b>夏休み出勤可能日登録</b><small>夏期講習の出勤可能日を登録</small></div><em>›</em>
-        </button>
-
-        <button class="mini-card purple disabled">
-          <span>💰</span><div><b>給与明細</b><small>準備中</small></div><em>›</em>
-        </button>
-
-        <button class="mini-card orange" onclick="showAdminQr()">
-          <span>⚙️</span><div><b>管理者QR登録</b><small>講師QRを登録します</small></div><em>›</em>
-        </button>
-      </div>
-
-      <div class="mini-town">
-        <i class="building b1"></i><i class="building b2"></i><i class="building b3"></i><i class="building b4"></i>
-        <i class="roof r1"></i><i class="roof r2"></i>
-        <i class="tree t1"></i><i class="tree t2"></i><i class="tree t3"></i>
-      </div>
-      <div class="mini-footer">© 個別指導STEP / Teacher Portal</div>
     </section>
 
     <section id="loginPage" class="page hidden">
@@ -67,7 +83,7 @@
         <label>講師コード</label>
         <input id="code" type="text" inputmode="numeric" placeholder="例：7085">
         <button onclick="login()">ログイン</button>
-        <div id="loginMsg" class="notice hidden"></div>
+        <div id="loginMsg" class="noticeMsg hidden"></div>
       </div>
     </section>
 
@@ -140,7 +156,7 @@
         <label>講師コード</label>
         <input id="nyuCode" type="text" inputmode="numeric" placeholder="例：7085">
         <button onclick="loadNyutaikunQr()">QRコードを表示</button>
-        <div id="nyuMsg" class="notice hidden"></div>
+        <div id="nyuMsg" class="noticeMsg hidden"></div>
       </div>
     </section>
 
@@ -170,14 +186,14 @@
           <canvas id="qrCanvas" class="hidden"></canvas>
         </div>
 
-        <button id="startScanBtn" onclick="startQrScan()">カメラでQRを読む</button>
+        <button onclick="startQrScan()">カメラでQRを読む</button>
         <button class="secondary" onclick="stopQrScan()">カメラ停止</button>
 
         <label>読み取ったQRデータ</label>
         <textarea id="adminQrData" placeholder="カメラで読めない場合は、QRリーダー等で読んだ文字列をここへ貼り付けてもOKです。"></textarea>
 
         <button onclick="saveAdminQrData()">このQRデータをQ列へ保存</button>
-        <div id="adminMsg" class="notice hidden"></div>
+        <div id="adminMsg" class="noticeMsg hidden"></div>
       </div>
     </section>
   </main>

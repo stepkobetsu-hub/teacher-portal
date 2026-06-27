@@ -1,4 +1,4 @@
-const API_URL = 'https://script.google.com/macros/s/AKfycbwP-pEDbbHB-Ec2xO7BFiVYqwpveTnNVmPJkNV08MPD8iAHHq4S7zPyVxDwFEmaHI9-/exec';
+const API_URL = "https://script.google.com/macros/s/AKfycbwP-pEDbbHB-Ec2xO7BFiVYqwpveTnNVmPJkNV08MPD8iAHHq4S7zPyVxDwFEmaHI9-/exec";
 
 let teacher = null;
 let scanStream = null;
@@ -36,7 +36,7 @@ function setHomeDate() {
 
 function showPage(id) {
   stopQrScan();
-  ['homePage', 'loginPage', 'formPage', 'completePage', 'nyutaikunLoginPage', 'nyutaikunQrPage', 'adminQrPage'].forEach(pageId => {
+  ['homePage','loginPage','formPage','completePage','nyutaikunLoginPage','nyutaikunQrPage','adminQrPage'].forEach(pageId => {
     document.getElementById(pageId).classList.toggle('hidden', pageId !== id);
   });
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -56,6 +56,7 @@ function showNyutaikun() {
 
 function showAdminQr() { showPage('adminQrPage'); }
 function backHome() { showPage('homePage'); }
+function openSummerSchedule() { window.location.href = "https://script.google.com/macros/s/AKfycbys7A1hwDTvpJms24uUJQLiD-oN8trVFMBfUEaU-99RePefcemkkA754rxBW0cnnY6o/exec"; }
 
 function jsonp(params) {
   return new Promise((resolve, reject) => {
@@ -119,9 +120,9 @@ function updateDateText() {
   const value = document.getElementById('workDate')?.value;
   if (!value) return;
   const date = new Date(value + 'T00:00:00');
-  const weeks = ['日', '月', '火', '水', '木', '金', '土'];
+  const weeks = ['日','月','火','水','木','金','土'];
   document.getElementById('dateText').textContent =
-    date.getFullYear() + '年' + (date.getMonth() + 1) + '月' + date.getDate() + '日（' + weeks[date.getDay()] + '）';
+    date.getFullYear() + '年' + (date.getMonth()+1) + '月' + date.getDate() + '日（' + weeks[date.getDay()] + '）';
 }
 
 function toggleOther() {
@@ -146,8 +147,10 @@ async function submitForm() {
   if (data.koma === 'その他' && !data.komaOther) { alert('その他のコマ数を入力してください。'); return; }
 
   const btn = document.getElementById('submitBtn');
-  btn.disabled = true; btn.textContent = '送信中...';
+  btn.disabled = true;
+  btn.textContent = '送信中...';
   document.getElementById('sending').classList.remove('hidden');
+
   try {
     const res = await jsonp(data);
     if (!res.ok) throw new Error(res.message || '送信できませんでした。');
@@ -157,7 +160,8 @@ async function submitForm() {
     showPage('completePage');
   } catch (err) {
     alert(err.message || '送信できませんでした。もう一度お試しください。');
-    btn.disabled = false; btn.textContent = '送信する';
+    btn.disabled = false;
+    btn.textContent = '送信する';
     document.getElementById('sending').classList.add('hidden');
   }
 }
@@ -185,6 +189,7 @@ async function loadNyutaikunQr() {
   const msg = document.getElementById('nyuMsg');
   msg.classList.add('hidden');
   if (!code) { msg.textContent = '講師コードを入力してください。'; msg.classList.remove('hidden'); return; }
+
   try {
     const res = await jsonp({ action: 'getTeacher', code });
     if (!res.ok) throw new Error(res.message || '講師コードが見つかりません。');
@@ -216,7 +221,8 @@ async function startQrScan() {
   msg.classList.add('hidden');
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
     msg.textContent = 'この端末ではカメラが使えません。QRリーダーで読んだ文字列を手入力してください。';
-    msg.classList.remove('hidden'); return;
+    msg.classList.remove('hidden');
+    return;
   }
   try {
     scanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
@@ -228,7 +234,8 @@ async function startQrScan() {
     const ctx = canvas.getContext('2d');
     scanTimer = setInterval(() => {
       if (video.readyState !== video.HAVE_ENOUGH_DATA) return;
-      canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const code = jsQR(imageData.data, canvas.width, canvas.height);
@@ -256,7 +263,9 @@ async function saveAdminQrData() {
   const qrData = document.getElementById('adminQrData').value.trim();
   const msg = document.getElementById('adminMsg');
   msg.classList.add('hidden');
+
   if (!code || !qrData) { showToast('未入力です', '講師コードとQRデータを入力してください。', '⚠️'); return; }
+
   try {
     const res = await jsonp({ action: 'saveQrData', code, qrData });
     if (!res.ok) throw new Error(res.message || '保存できませんでした。');
@@ -270,9 +279,4 @@ async function saveAdminQrData() {
     msg.textContent = err.message || '保存できませんでした。';
     msg.classList.remove('hidden');
   }
-}
-
-
-function openSummerSchedule() {
-  window.location.href = "https://script.google.com/macros/s/AKfycbys7A1hwDTvpJms24uUJQLiD-oN8trVFMBfUEaU-99RePefcemkkA754rxBW0cnnY6o/exec";
 }

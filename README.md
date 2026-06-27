@@ -1,3 +1,3 @@
-# teacher-portal v12 compact
+# teacher-portal v13 final approved
 
-添付スクリーンショットに近いコンパクトなトップページ。夏休み出勤可能日登録ボタン追加。
+選択されたデザインを反映。夏休み出勤可能日登録ボタンあり。
