@@ -14,7 +14,17 @@ window.addEventListener('DOMContentLoaded', () => {
   }
   setToday();
   setHomeDate();
+  setGreeting();
 });
+
+function setGreeting() {
+  const el = document.getElementById('greetingText');
+  if (!el) return;
+  const hour = new Date().getHours();
+  if (hour < 11) el.textContent = 'おはようございます！';
+  else if (hour < 17) el.textContent = '今日も一緒にがんばりましょう！';
+  else el.textContent = '今日もお疲れ様でした！';
+}
 
 function setHomeDate() {
   const el = document.getElementById('homeDate');
@@ -44,52 +54,24 @@ function showNyutaikun() {
   if (savedCode) document.getElementById('nyuCode').value = savedCode;
 }
 
-function showAdminQr() {
-  showPage('adminQrPage');
-}
-
-function backHome() {
-  showPage('homePage');
-}
+function showAdminQr() { showPage('adminQrPage'); }
+function backHome() { showPage('homePage'); }
 
 function jsonp(params) {
   return new Promise((resolve, reject) => {
-    if (!API_URL || API_URL.includes('XXXXXXXX')) {
-      reject(new Error('API_URLが未設定です。script.jsにApps ScriptのURLを貼ってください。'));
-      return;
-    }
-
     const callbackName = 'jsonp_cb_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
     params.callback = callbackName;
-
-    const query = Object.keys(params)
-      .map(key => encodeURIComponent(key) + '=' + encodeURIComponent(params[key] ?? ''))
-      .join('&');
-
+    const query = Object.keys(params).map(key => encodeURIComponent(key) + '=' + encodeURIComponent(params[key] ?? '')).join('&');
     const script = document.createElement('script');
     script.src = API_URL + '?' + query;
-
-    const timer = setTimeout(() => {
-      cleanup();
-      reject(new Error('通信がタイムアウトしました。'));
-    }, 20000);
-
+    const timer = setTimeout(() => { cleanup(); reject(new Error('通信がタイムアウトしました。')); }, 20000);
     function cleanup() {
       clearTimeout(timer);
       delete window[callbackName];
       if (script.parentNode) script.parentNode.removeChild(script);
     }
-
-    window[callbackName] = (response) => {
-      cleanup();
-      resolve(response);
-    };
-
-    script.onerror = () => {
-      cleanup();
-      reject(new Error('通信に失敗しました。'));
-    };
-
+    window[callbackName] = (response) => { cleanup(); resolve(response); };
+    script.onerror = () => { cleanup(); reject(new Error('通信に失敗しました。')); };
     document.body.appendChild(script);
   });
 }
@@ -100,29 +82,17 @@ function showToast(title, text, icon = '✅') {
   document.getElementById('toastText').textContent = text || '';
   document.getElementById('toast').classList.remove('hidden');
 }
-
-function hideToast() {
-  document.getElementById('toast').classList.add('hidden');
-}
+function hideToast() { document.getElementById('toast').classList.add('hidden'); }
 
 async function login() {
   const code = document.getElementById('code').value.trim();
-  if (!code) {
-    showLoginMsg('講師コードを入力してください。');
-    return;
-  }
-
+  if (!code) { showLoginMsg('講師コードを入力してください。'); return; }
   try {
     const res = await jsonp({ action: 'getTeacher', code });
-    if (!res.ok) {
-      showLoginMsg(res.message || '講師コードが見つかりません。名前がない場合は、すぐに申し出てください。');
-      return;
-    }
-
+    if (!res.ok) { showLoginMsg(res.message || '講師コードが見つかりません。名前がない場合は、すぐに申し出てください。'); return; }
     teacher = res.teacher;
     localStorage.setItem('teacherCode', code);
     localStorage.setItem('teacherName', teacher.name || '');
-
     document.getElementById('hello').textContent = teacher.name + 'さん、お疲れ様でした！';
     document.getElementById('headerName').textContent = teacher.name + 'さんとして入力中';
     resetForm(false);
@@ -151,9 +121,7 @@ function updateDateText() {
   const date = new Date(value + 'T00:00:00');
   const weeks = ['日', '月', '火', '水', '木', '金', '土'];
   document.getElementById('dateText').textContent =
-    date.getFullYear() + '年' +
-    (date.getMonth() + 1) + '月' +
-    date.getDate() + '日（' + weeks[date.getDay()] + '）';
+    date.getFullYear() + '年' + (date.getMonth() + 1) + '月' + date.getDate() + '日（' + weeks[date.getDay()] + '）';
 }
 
 function toggleOther() {
@@ -162,12 +130,7 @@ function toggleOther() {
 }
 
 async function submitForm() {
-  if (!teacher) {
-    alert('ログインし直してください。');
-    showPage('loginPage');
-    return;
-  }
-
+  if (!teacher) { alert('ログインし直してください。'); showPage('loginPage'); return; }
   const lessons = Array.from(document.querySelectorAll('.checks input:checked')).map(el => el.value);
   const data = {
     action: 'submitAttendance',
@@ -179,46 +142,28 @@ async function submitForm() {
     place: document.getElementById('place').value,
     memo: document.getElementById('memo').value
   };
-
-  if (!data.workDate || lessons.length === 0 || !data.koma || !data.place) {
-    alert('出勤日、担当授業、コマ数、勤務場所を入力してください。');
-    return;
-  }
-  if (data.koma === 'その他' && !data.komaOther) {
-    alert('その他のコマ数を入力してください。');
-    return;
-  }
+  if (!data.workDate || lessons.length === 0 || !data.koma || !data.place) { alert('出勤日、担当授業、コマ数、勤務場所を入力してください。'); return; }
+  if (data.koma === 'その他' && !data.komaOther) { alert('その他のコマ数を入力してください。'); return; }
 
   const btn = document.getElementById('submitBtn');
-  btn.disabled = true;
-  btn.textContent = '送信中...';
+  btn.disabled = true; btn.textContent = '送信中...';
   document.getElementById('sending').classList.remove('hidden');
-
   try {
     const res = await jsonp(data);
     if (!res.ok) throw new Error(res.message || '送信できませんでした。');
-
     const name = res.name || teacher.name;
-    document.getElementById('completeMessage').textContent =
-      name + 'さん、お疲れ様でした。出勤確認を受け付けました。';
+    document.getElementById('completeMessage').textContent = name + 'さん、お疲れ様でした。出勤確認を受け付けました。';
     document.getElementById('randomMessage').textContent = randomMessage();
     showPage('completePage');
   } catch (err) {
     alert(err.message || '送信できませんでした。もう一度お試しください。');
-    btn.disabled = false;
-    btn.textContent = '送信する';
+    btn.disabled = false; btn.textContent = '送信する';
     document.getElementById('sending').classList.add('hidden');
   }
 }
 
 function randomMessage() {
-  const messages = [
-    '今日もありがとうございました😊',
-    '授業お疲れ様でした！',
-    'また次回もよろしくお願いします！',
-    '今日も助かりました！',
-    '入退くんも忘れずにお願いします！'
-  ];
+  const messages = ['今日もありがとうございました😊','授業お疲れ様でした！','また次回もよろしくお願いします！','今日も助かりました！','入退くんも忘れずにお願いします！'];
   return messages[Math.floor(Math.random() * messages.length)];
 }
 
@@ -233,35 +178,20 @@ function resetForm(resetDate = true) {
   document.getElementById('submitBtn').textContent = '送信する';
   if (resetDate) setToday();
 }
-
-function backToForm() {
-  resetForm(true);
-  showPage('formPage');
-}
+function backToForm() { resetForm(true); showPage('formPage'); }
 
 async function loadNyutaikunQr() {
   const code = document.getElementById('nyuCode').value.trim();
   const msg = document.getElementById('nyuMsg');
   msg.classList.add('hidden');
-
-  if (!code) {
-    msg.textContent = '講師コードを入力してください。';
-    msg.classList.remove('hidden');
-    return;
-  }
-
+  if (!code) { msg.textContent = '講師コードを入力してください。'; msg.classList.remove('hidden'); return; }
   try {
     const res = await jsonp({ action: 'getTeacher', code });
     if (!res.ok) throw new Error(res.message || '講師コードが見つかりません。');
-
     const t = res.teacher;
     localStorage.setItem('teacherCode', code);
     localStorage.setItem('teacherName', t.name || '');
-
-    if (!t.qrData) {
-      throw new Error('この講師の入退くんQRデータが未登録です。管理者に確認してください。');
-    }
-
+    if (!t.qrData) throw new Error('この講師の入退くんQRデータが未登録です。管理者に確認してください。');
     document.getElementById('nyuName').textContent = t.name + 'さんの入退くんQR';
     const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=360x360&data=' + encodeURIComponent(t.qrData);
     document.getElementById('qrDisplay').innerHTML = '<img alt="入退くんQR" src="' + qrUrl + '">';
@@ -284,27 +214,21 @@ function logoutNyutaikun() {
 async function startQrScan() {
   const msg = document.getElementById('adminMsg');
   msg.classList.add('hidden');
-
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
     msg.textContent = 'この端末ではカメラが使えません。QRリーダーで読んだ文字列を手入力してください。';
-    msg.classList.remove('hidden');
-    return;
+    msg.classList.remove('hidden'); return;
   }
-
   try {
     scanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
     const video = document.getElementById('qrVideo');
     video.srcObject = scanStream;
     video.setAttribute('playsinline', true);
     await video.play();
-
     const canvas = document.getElementById('qrCanvas');
     const ctx = canvas.getContext('2d');
-
     scanTimer = setInterval(() => {
       if (video.readyState !== video.HAVE_ENOUGH_DATA) return;
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
+      canvas.width = video.videoWidth; canvas.height = video.videoHeight;
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const code = jsQR(imageData.data, canvas.width, canvas.height);
@@ -321,14 +245,8 @@ async function startQrScan() {
 }
 
 function stopQrScan() {
-  if (scanTimer) {
-    clearInterval(scanTimer);
-    scanTimer = null;
-  }
-  if (scanStream) {
-    scanStream.getTracks().forEach(track => track.stop());
-    scanStream = null;
-  }
+  if (scanTimer) { clearInterval(scanTimer); scanTimer = null; }
+  if (scanStream) { scanStream.getTracks().forEach(track => track.stop()); scanStream = null; }
   const video = document.getElementById('qrVideo');
   if (video) video.srcObject = null;
 }
@@ -338,16 +256,10 @@ async function saveAdminQrData() {
   const qrData = document.getElementById('adminQrData').value.trim();
   const msg = document.getElementById('adminMsg');
   msg.classList.add('hidden');
-
-  if (!code || !qrData) {
-    showToast('未入力です', '講師コードとQRデータを入力してください。', '⚠️');
-    return;
-  }
-
+  if (!code || !qrData) { showToast('未入力です', '講師コードとQRデータを入力してください。', '⚠️'); return; }
   try {
     const res = await jsonp({ action: 'saveQrData', code, qrData });
     if (!res.ok) throw new Error(res.message || '保存できませんでした。');
-
     showToast('Q列へ保存しました', (res.name || code) + ' の入退くんQRデータを保存しました。', '✅');
     msg.textContent = (res.name || code) + ' のQRデータを講師マスターQ列に保存しました。';
     msg.classList.remove('hidden');

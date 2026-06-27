@@ -7,61 +7,78 @@
   <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="images/app-icon.png">
-  <link rel="icon" href="images/app-icon.png">
+  <link rel="icon" href="images/favicon.png">
   <meta name="theme-color" content="#2563eb">
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 </head>
 <body>
   <main class="app">
     <section id="homePage" class="page home-page">
-      <div class="top-hero">
-        <img src="images/logo.jpg" class="logo" alt="個別指導STEP">
-        <div class="hero-title">
-          <h1>講師ポータル</h1>
-          <p>授業後の確認・入退くんQRはこちら</p>
+      <div class="pop-hero">
+        <div class="confetti c1"></div>
+        <div class="confetti c2"></div>
+        <div class="confetti c3"></div>
+        <div class="stripe"></div>
+        <img src="images/logo.jpg" class="home-logo" alt="個別指導STEP">
+        <div class="portal-icon">
+          <img src="images/app-icon.png" alt="">
         </div>
+        <h1>STEP</h1>
+        <h2>講師ポータル</h2>
+        <p id="greetingText">今日も一緒にがんばりましょう！</p>
       </div>
 
-      <div class="today-panel">
-        <div>
-          <span class="today-label">TODAY</span>
-          <strong id="homeDate">----</strong>
-        </div>
-        <span class="badge">STEP</span>
+      <div class="date-pill">
+        <span>📅</span>
+        <strong id="homeDate">----</strong>
       </div>
 
-      <div class="menu">
-        <button class="menu-card primary" onclick="showAttendance()">
+      <div class="menu colorful">
+        <button class="menu-card green" onclick="showAttendance()">
           <span class="icon">📝</span>
           <span>
             <strong>出勤確認</strong>
             <small>授業後の出勤報告はこちら</small>
           </span>
+          <b>›</b>
         </button>
 
-        <button class="menu-card qr" onclick="showNyutaikun()">
+        <button class="menu-card blue" onclick="showNyutaikun()">
           <span class="icon">📱</span>
           <span>
             <strong>入退くんQR</strong>
             <small>来た時・帰る時にタブレットへ</small>
           </span>
+          <b>›</b>
         </button>
 
-        <button class="menu-card disabled">
+        <button class="menu-card purple disabled">
           <span class="icon">💰</span>
           <span>
             <strong>給与明細</strong>
             <small>準備中</small>
           </span>
+          <b>›</b>
         </button>
 
-        <button class="menu-card admin" onclick="showAdminQr()">
+        <button class="menu-card orange" onclick="showAdminQr()">
           <span class="icon">⚙️</span>
           <span>
             <strong>管理者：QR登録</strong>
-            <small>紙QRを読み取り、Q列へ保存</small>
+            <small>講師QRをQ列へ保存します</small>
           </span>
+          <b>›</b>
         </button>
+      </div>
+
+      <div class="town">
+        <span class="cloud cloud1"></span>
+        <span class="cloud cloud2"></span>
+        <span class="house h1"></span>
+        <span class="house h2"></span>
+        <span class="house h3"></span>
+        <span class="tree t1"></span>
+        <span class="tree t2"></span>
       </div>
 
       <div class="footer-note">© 個別指導STEP / Teacher Portal</div>
@@ -103,12 +120,8 @@
         <label>本日の担当コマ数</label>
         <select id="koma" onchange="toggleOther()">
           <option value="">選択してください</option>
-          <option value="1">1</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-          <option value="5">5</option>
-          <option value="6">6</option>
+          <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+          <option value="4">4</option><option value="5">5</option><option value="6">6</option>
           <option value="その他">その他</option>
         </select>
 
