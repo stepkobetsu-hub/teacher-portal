@@ -1,5 +1,6 @@
 // Apps Scriptを「ウェブアプリ」としてデプロイしたURLをここに貼ります。
-// 例: const API_URL = 'https://script.google.com/macros/s/XXXXXXXX/exec';
+
+const API_URL = "https://script.google.com/macros/s/AKfycbwyGLXDtvNhlKvUnhPbQZmTl6CIvrrAlj9pOUymffWldj1ttzK4IpmLArKKVRLv_PWx/exec";
 const API_URL = 'PASTE_APPS_SCRIPT_WEB_APP_URL_HERE';
 
 let teacher = null;
