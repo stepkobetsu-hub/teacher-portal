@@ -5,17 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>個別指導STEP 講師ポータル</title>
   <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 </head>
 <body>
   <main class="app">
-
     <section id="homePage" class="page">
-      <div class="homeCard">
-        <img src="images/logo.jpg" alt="個別指導STEP" class="logo compactLogo">
+      <div class="hero compact">
+        <img src="images/logo.jpg" class="logo" alt="個別指導STEP">
         <h1>講師ポータル</h1>
-        <p class="subTitle">個別指導STEP</p>
+        <p>個別指導STEP</p>
+      </div>
 
-        <button class="menuCard primary" onclick="showAttendance()">
+      <div class="menu">
+        <button class="menu-card primary" onclick="showAttendance()">
           <span class="icon">📝</span>
           <span>
             <strong>出勤確認</strong>
@@ -23,19 +25,27 @@
           </span>
         </button>
 
-        <button class="menuCard" onclick="showNyutaikun()">
-          <span class="icon">▦</span>
+        <button class="menu-card" onclick="showNyutaikun()">
+          <span class="icon">📱</span>
           <span>
             <strong>入退くん</strong>
             <small>自分のQRコードを表示</small>
           </span>
         </button>
 
-        <button class="menuCard disabled" type="button">
+        <button class="menu-card disabled">
           <span class="icon">💰</span>
           <span>
             <strong>給与明細</strong>
             <small>準備中</small>
+          </span>
+        </button>
+
+        <button class="menu-card admin" onclick="showAdminQr()">
+          <span class="icon">⚙️</span>
+          <span>
+            <strong>管理者：QR登録</strong>
+            <small>講師マスターQ列へ登録</small>
           </span>
         </button>
       </div>
@@ -43,9 +53,9 @@
 
     <section id="loginPage" class="page hidden">
       <div class="card">
-        <button class="backBtn" onclick="backHome()">← トップへ戻る</button>
-        <h2>出勤確認ログイン</h2>
-        <p class="subTitle">講師コードを入力してください</p>
+        <button class="back" onclick="backHome()">← トップへ</button>
+        <h2>講師ログイン</h2>
+        <p class="lead">講師コードを入力してください。</p>
         <label>講師コード</label>
         <input id="code" type="text" inputmode="numeric" placeholder="例：7085">
         <button onclick="login()">ログイン</button>
@@ -112,34 +122,60 @@
         <div class="doneTitle">送信完了しました</div>
         <div id="completeMessage" class="doneSub"></div>
         <div id="randomMessage" class="randomMessage"></div>
+        <div class="nyutaikun-reminder">入退くんも忘れずにお願いします！</div>
         <button onclick="backToForm()">続けて入力する</button>
-        <button class="secondary" onclick="backHome()">トップへ戻る</button>
+        <button class="secondary" onclick="backHome()">トップページへ戻る</button>
       </div>
     </section>
 
-    <section id="nyutaikunPage" class="page hidden">
-      <div class="card qrCard">
-        <button class="backBtn" onclick="backHome()">← トップへ戻る</button>
-        <h2>入退くん QRコード</h2>
-        <p class="subTitle">教室入口のタブレットに読み取らせてください</p>
-
-        <div id="nyutaikunLogin">
-          <label>講師コード</label>
-          <input id="qrCodeInput" type="text" inputmode="numeric" placeholder="例：7085">
-          <button onclick="showMyQr()">QRコードを表示</button>
-          <div id="qrMsg" class="notice hidden"></div>
-        </div>
-
-        <div id="qrDisplay" class="hidden">
-          <div class="qrTeacher" id="qrTeacherName"></div>
-          <img id="qrImage" class="qrImage" alt="入退くん QRコード">
-          <div class="qrHint">来たとき・帰るときに、このQRコードを読み取ってください。</div>
-          <button onclick="backHome()">トップページへ戻る</button>
-          <button class="secondary danger" onclick="logoutQr()">ログアウト・コードを消す</button>
-        </div>
+    <section id="nyutaikunLoginPage" class="page hidden">
+      <div class="card">
+        <button class="back" onclick="backHome()">← トップへ</button>
+        <h2>入退くんQR</h2>
+        <p class="lead">講師コードを入力してください。次回から記憶されます。</p>
+        <label>講師コード</label>
+        <input id="nyuCode" type="text" inputmode="numeric" placeholder="例：7085">
+        <button onclick="loadNyutaikunQr()">QRコードを表示</button>
+        <div id="nyuMsg" class="notice hidden"></div>
       </div>
     </section>
 
+    <section id="nyutaikunQrPage" class="page hidden">
+      <div class="card qr-card">
+        <button class="back" onclick="backHome()">← トップへ</button>
+        <h2 id="nyuName">入退くんQR</h2>
+        <p class="lead">入口のAndroidタブレットにかざしてください。</p>
+        <div id="qrDisplay" class="qr-display"></div>
+        <div id="qrRaw" class="qr-raw"></div>
+        <button onclick="backHome()">トップページへ戻る</button>
+        <button class="secondary" onclick="logoutNyutaikun()">ログアウト・コードを消す</button>
+      </div>
+    </section>
+
+    <section id="adminQrPage" class="page hidden">
+      <div class="card">
+        <button class="back" onclick="backHome()">← トップへ</button>
+        <h2>管理者：QR登録</h2>
+        <p class="lead">紙の入退くんQRを読み取り、講師マスターQ列に保存します。</p>
+
+        <label>講師コード</label>
+        <input id="adminCode" type="text" inputmode="numeric" placeholder="例：7085">
+
+        <div class="scanner-box">
+          <video id="qrVideo" playsinline></video>
+          <canvas id="qrCanvas" class="hidden"></canvas>
+        </div>
+
+        <button id="startScanBtn" onclick="startQrScan()">カメラでQRを読む</button>
+        <button class="secondary" onclick="stopQrScan()">カメラ停止</button>
+
+        <label>読み取ったQRデータ</label>
+        <textarea id="adminQrData" placeholder="カメラで読めない場合は、QRリーダー等で読んだ文字列をここへ貼り付けてもOKです。"></textarea>
+
+        <button onclick="saveAdminQrData()">このQRデータをQ列へ保存</button>
+        <div id="adminMsg" class="notice hidden"></div>
+      </div>
+    </section>
   </main>
 
   <script src="script.js"></script>
