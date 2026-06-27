@@ -271,3 +271,8 @@ async function saveAdminQrData() {
     msg.classList.remove('hidden');
   }
 }
+
+
+function openSummerSchedule() {
+  window.location.href = "https://script.google.com/macros/s/AKfycbys7A1hwDTvpJms24uUJQLiD-oN8trVFMBfUEaU-99RePefcemkkA754rxBW0cnnY6o/exec";
+}

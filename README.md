@@ -1,3 +1,3 @@
-# teacher-portal v11 final fixed
+# teacher-portal v11 summer
 
-指定されたデザインに固定。ファビコンは指定画像を使用。
+トップページに「夏休み出勤可能日登録」ボタンを追加。
