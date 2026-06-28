@@ -940,3 +940,110 @@ button.back {
     right:88px;
   }
 }
+
+
+/* v19 出勤確認：自動ログイン対応＋ログアウト */
+.logoutAttendanceBtn{
+  width:auto !important;
+  margin:0 0 12px auto !important;
+  display:block !important;
+  padding:9px 12px !important;
+  border-radius:10px !important;
+  background:#fff !important;
+  color:#ef4444 !important;
+  border:2px solid #ef4444 !important;
+  font-size:14px !important;
+  font-weight:900 !important;
+}
+
+/* v19 完了画面：かわいめ入退くんイラスト */
+.cuteNyutaikunIllust{
+  height:185px !important;
+}
+
+.cuteDesk{
+  position:relative;
+  width:170px;
+  height:128px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.cuteTablet{
+  width:138px;
+  height:105px;
+  border-radius:24px;
+  background:linear-gradient(135deg,#60a5fa,#2563eb);
+  padding:10px;
+  box-shadow:0 14px 28px rgba(37,99,235,.24);
+  transform:rotate(-2deg);
+  display:flex;
+  gap:8px;
+  align-items:center;
+  justify-content:center;
+}
+
+.cuteFace{
+  width:45px;
+  height:45px;
+  border-radius:50%;
+  background:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:26px;
+}
+
+.cuteQR{
+  width:58px;
+  height:58px;
+  background:#fff;
+  border-radius:10px;
+  padding:6px;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:4px;
+}
+
+.cuteQR i{
+  background:#111827;
+  border-radius:2px;
+}
+
+.cuteStand{
+  position:absolute;
+  bottom:2px;
+  width:115px;
+  height:14px;
+  border-radius:999px;
+  background:#93c5fd;
+}
+
+.cutePhone{
+  position:absolute;
+  right:40px;
+  bottom:32px;
+  font-size:50px;
+  transform:rotate(8deg);
+  filter:drop-shadow(0 8px 10px rgba(15,23,42,.18));
+}
+
+.cuteSparkle{
+  position:absolute;
+  font-size:24px;
+}
+.cuteSparkle.sA{
+  left:45px;
+  top:22px;
+}
+.cuteSparkle.sB{
+  right:54px;
+  top:16px;
+}
+
+@media(max-width:430px){
+  .cutePhone{
+    right:24px;
+  }
+}

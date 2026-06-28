@@ -44,8 +44,14 @@ function showPage(id) {
 
 function showAttendance() {
   const savedCode = localStorage.getItem('teacherCode');
+  if (savedCode) {
+    showPage('loginPage');
+    const codeEl = document.getElementById('code');
+    if (codeEl) codeEl.value = savedCode;
+    login();
+    return;
+  }
   showPage('loginPage');
-  if (savedCode) document.getElementById('code').value = savedCode;
 }
 
 function showNyutaikun() {
@@ -327,4 +333,16 @@ function openDatePicker() {
   } catch (e) {}
   el.focus();
   el.click();
+}
+
+
+function logoutAttendance() {
+  localStorage.removeItem('teacherCode');
+  localStorage.removeItem('teacherName');
+  teacher = null;
+  const codeEl = document.getElementById('code');
+  const nyuEl = document.getElementById('nyuCode');
+  if (codeEl) codeEl.value = '';
+  if (nyuEl) nyuEl.value = '';
+  showPage('homePage');
 }
