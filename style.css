@@ -588,3 +588,169 @@ button.back {
   .finalBtn strong{font-size:20px}
   .finalBtn small{font-size:12px}
 }
+
+
+/* v14 入退くんQR：コード・名前・QRだけの大きめ表示 */
+.simple-qr-page{
+  text-align:center;
+}
+
+.qrTeacherInfo{
+  margin: 8px 0 18px;
+  display:grid;
+  gap:12px;
+}
+
+.qrTeacherInfo div{
+  background:#eff6ff;
+  border:2px solid #bfdbfe;
+  border-radius:18px;
+  padding:14px 12px;
+}
+
+.qrTeacherInfo span{
+  display:block;
+  font-size:14px;
+  font-weight:900;
+  color:#64748b;
+  margin-bottom:6px;
+}
+
+.qrTeacherInfo strong{
+  display:block;
+  font-size:30px;
+  font-weight:900;
+  color:#1d4ed8;
+  line-height:1.2;
+}
+
+.qrNameLine strong{
+  font-size:34px;
+}
+
+.large-qr{
+  margin:18px auto 16px !important;
+  padding:16px !important;
+  border-radius:24px !important;
+}
+
+.large-qr img{
+  width:min(78vw, 360px) !important;
+  height:min(78vw, 360px) !important;
+}
+
+@media(max-width:430px){
+  .qrTeacherInfo strong{
+    font-size:26px;
+  }
+  .qrNameLine strong{
+    font-size:30px;
+  }
+}
+
+
+/* v15 入退くんQR画面：コード・名前・QR・ログアウト */
+.qrOnlyPage{
+  min-height:100vh;
+  background:#fff;
+  padding:18px;
+  text-align:center;
+}
+
+.qrTopBar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:18px;
+  padding-bottom:12px;
+  border-bottom:1px solid #e5e7eb;
+}
+
+.qrTopTitle{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-weight:900;
+  font-size:22px;
+  color:#111827;
+}
+
+.qrTopTitle img{
+  width:44px;
+  height:44px;
+  border-radius:10px;
+}
+
+.logoutMini{
+  width:auto !important;
+  margin:0 !important;
+  padding:9px 12px !important;
+  border-radius:10px !important;
+  background:#fff !important;
+  color:#ef4444 !important;
+  border:2px solid #ef4444 !important;
+  font-size:14px !important;
+  font-weight:900 !important;
+}
+
+.qrTeacherInfo{
+  display:grid;
+  gap:14px;
+  margin:16px 0 20px;
+}
+
+.qrTeacherInfo div{
+  background:#f8fbff;
+  border:1px solid #e5edf7;
+  border-radius:16px;
+  padding:14px 12px;
+}
+
+.qrTeacherInfo span{
+  display:block;
+  color:#1d4ed8;
+  font-weight:900;
+  font-size:15px;
+  margin-bottom:6px;
+}
+
+.qrTeacherInfo strong{
+  display:block;
+  color:#111827;
+  font-weight:900;
+  font-size:38px;
+  line-height:1.15;
+}
+
+.qrTeacherInfo div:nth-child(2) strong{
+  font-size:42px;
+}
+
+.large-qr{
+  margin:18px auto 16px !important;
+  padding:16px !important;
+  border-radius:24px !important;
+  border:0 !important;
+  box-shadow:0 8px 24px rgba(15,23,42,.10);
+}
+
+.large-qr img{
+  width:min(80vw, 370px) !important;
+  height:min(80vw, 370px) !important;
+}
+
+.qrGuide{
+  color:#475569;
+  font-weight:800;
+  line-height:1.7;
+  margin:10px 0 18px;
+}
+
+@media(max-width:430px){
+  .qrOnlyPage{padding:14px}
+  .qrTeacherInfo strong{font-size:32px}
+  .qrTeacherInfo div:nth-child(2) strong{font-size:36px}
+  .qrTopTitle{font-size:20px}
+  .logoutMini{font-size:13px !important}
+}

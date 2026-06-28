@@ -50,8 +50,14 @@ function showAttendance() {
 
 function showNyutaikun() {
   const savedCode = localStorage.getItem('teacherCode');
+  if (savedCode) {
+    showPage('nyutaikunLoginPage');
+    const nyuEl = document.getElementById('nyuCode');
+    if (nyuEl) nyuEl.value = savedCode;
+    loadNyutaikunQr();
+    return;
+  }
   showPage('nyutaikunLoginPage');
-  if (savedCode) document.getElementById('nyuCode').value = savedCode;
 }
 
 function showAdminQr() { showPage('adminQrPage'); }
@@ -197,7 +203,10 @@ async function loadNyutaikunQr() {
     localStorage.setItem('teacherCode', code);
     localStorage.setItem('teacherName', t.name || '');
     if (!t.qrData) throw new Error('この講師の入退くんQRデータが未登録です。管理者に確認してください。');
-    document.getElementById('nyuName').textContent = t.name + 'さんの入退くんQR';
+    const codeDisplay = document.getElementById('nyuCodeDisplay');
+    const nameDisplay = document.getElementById('nyuNameDisplay');
+    if (codeDisplay) codeDisplay.textContent = code;
+    if (nameDisplay) nameDisplay.textContent = t.name || '';
     const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=360x360&data=' + encodeURIComponent(t.qrData);
     document.getElementById('qrDisplay').innerHTML = '<img alt="入退くんQR" src="' + qrUrl + '">';
     document.getElementById('qrRaw').textContent = t.qrData;

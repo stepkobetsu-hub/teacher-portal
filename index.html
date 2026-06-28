@@ -157,14 +157,31 @@
     </section>
 
     <section id="nyutaikunQrPage" class="page hidden">
-      <div class="card qr-card">
-        <button class="back" onclick="backHome()">← トップへ</button>
-        <h2 id="nyuName">入退くんQR</h2>
-        <p class="lead">入口のAndroidタブレットにかざしてください。</p>
-        <div id="qrDisplay" class="qr-display"></div>
-        <div id="qrRaw" class="qr-raw"></div>
+      <div class="qrOnlyPage">
+        <div class="qrTopBar">
+          <div class="qrTopTitle">
+            <img src="images/app-icon.png" alt="">
+            <span>入退くんQR</span>
+          </div>
+          <button class="logoutMini" onclick="logoutNyutaikun()">ログアウト</button>
+        </div>
+
+        <div class="qrTeacherInfo">
+          <div>
+            <span>講師コード</span>
+            <strong id="nyuCodeDisplay">----</strong>
+          </div>
+          <div>
+            <span>氏名</span>
+            <strong id="nyuNameDisplay">----</strong>
+          </div>
+        </div>
+
+        <div id="qrDisplay" class="qr-display large-qr"></div>
+
+        <p class="qrGuide">このQRコードを入口のAndroidタブレットにかざしてください。</p>
+
         <button onclick="backHome()">トップページへ戻る</button>
-        <button class="secondary" onclick="logoutNyutaikun()">ログアウト・コードを消す</button>
       </div>
     </section>
 

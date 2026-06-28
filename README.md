@@ -1,3 +1,3 @@
-# teacher-portal v13 final approved
+# teacher-portal v15 nyutaikun logout favicon
 
-選択されたデザインを反映。夏休み出勤可能日登録ボタンあり。
+入退くんQR画面にログアウトボタン追加。QRページは講師コード・氏名・QR中心。faviconをS＋赤矢印に変更。
