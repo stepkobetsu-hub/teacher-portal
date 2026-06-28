@@ -193,27 +193,50 @@ function backToForm() { resetForm(true); showPage('formPage'); }
 async function loadNyutaikunQr() {
   const code = document.getElementById('nyuCode').value.trim();
   const msg = document.getElementById('nyuMsg');
-  msg.classList.add('hidden');
-  if (!code) { msg.textContent = '講師コードを入力してください。'; msg.classList.remove('hidden'); return; }
+  if (msg) msg.classList.add('hidden');
+
+  if (!code) {
+    if (msg) {
+      msg.textContent = '講師コードを入力してください。';
+      msg.classList.remove('hidden');
+    }
+    return;
+  }
 
   try {
     const res = await jsonp({ action: 'getTeacher', code });
     if (!res.ok) throw new Error(res.message || '講師コードが見つかりません。');
+
     const t = res.teacher;
     localStorage.setItem('teacherCode', code);
     localStorage.setItem('teacherName', t.name || '');
-    if (!t.qrData) throw new Error('この講師の入退くんQRデータが未登録です。管理者に確認してください。');
+
+    if (!t.qrData) {
+      throw new Error('この講師の入退くんQRデータが未登録です。管理者に確認してください。');
+    }
+
     const codeDisplay = document.getElementById('nyuCodeDisplay');
     const nameDisplay = document.getElementById('nyuNameDisplay');
     if (codeDisplay) codeDisplay.textContent = code;
     if (nameDisplay) nameDisplay.textContent = t.name || '';
+
     const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=360x360&data=' + encodeURIComponent(t.qrData);
-    document.getElementById('qrDisplay').innerHTML = '<img alt="入退くんQR" src="' + qrUrl + '">';
-    document.getElementById('qrRaw').textContent = t.qrData;
+    const qrDisplay = document.getElementById('qrDisplay');
+    if (qrDisplay) {
+      qrDisplay.innerHTML = '<img alt="入退くんQR" src="' + qrUrl + '">';
+    }
+
+    const qrRaw = document.getElementById('qrRaw');
+    if (qrRaw) qrRaw.textContent = t.qrData;
+
     showPage('nyutaikunQrPage');
   } catch (err) {
-    msg.textContent = err.message || 'QRコードを表示できませんでした。';
-    msg.classList.remove('hidden');
+    if (msg) {
+      msg.textContent = err.message || 'QRコードを表示できませんでした。';
+      msg.classList.remove('hidden');
+    } else {
+      alert(err.message || 'QRコードを表示できませんでした。');
+    }
   }
 }
 
