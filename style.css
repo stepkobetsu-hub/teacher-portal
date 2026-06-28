@@ -1047,3 +1047,5 @@ button.back {
     right:24px;
   }
 }
+
+.attendanceTopBar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.topMiniBtn{width:auto!important;padding:9px 12px!important;border-radius:10px!important;background:#eef6ff!important;border:2px solid #bfdbfe!important;color:#1d4ed8!important;font-weight:900}
