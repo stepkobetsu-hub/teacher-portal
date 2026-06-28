@@ -1,3 +1,3 @@
-# teacher-portal v18 name emphasis
+# teacher-portal v17 date complete fixed
 
-出勤確認：保存済みコードなら即入力画面。コード小さめ・氏名大きめ。ログアウトあり。入退くんQRも氏名を大きく表示。
+日付選択を改善、入力中表示を削除、完了画面の入退くんイラストを復活。

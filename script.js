@@ -44,14 +44,8 @@ function showPage(id) {
 
 function showAttendance() {
   const savedCode = localStorage.getItem('teacherCode');
-  if (savedCode) {
-    showPage('loginPage');
-    const codeEl = document.getElementById('code');
-    if (codeEl) codeEl.value = savedCode;
-    login();
-    return;
-  }
   showPage('loginPage');
+  if (savedCode) document.getElementById('code').value = savedCode;
 }
 
 function showNyutaikun() {
@@ -107,10 +101,6 @@ async function login() {
     localStorage.setItem('teacherCode', code);
     localStorage.setItem('teacherName', teacher.name || '');
     document.getElementById('hello').textContent = teacher.name + 'さん、お疲れ様でした！';
-    const attendanceCodeDisplay = document.getElementById('attendanceCodeDisplay');
-    const attendanceNameDisplay = document.getElementById('attendanceNameDisplay');
-    if (attendanceCodeDisplay) attendanceCodeDisplay.textContent = teacher.code || code;
-    if (attendanceNameDisplay) attendanceNameDisplay.textContent = teacher.name || '';
     document.getElementById('headerName').textContent = teacher.name + 'さんとして入力中';
     resetForm(false);
     showPage('formPage');
@@ -324,13 +314,18 @@ async function saveAdminQrData() {
 }
 
 
-function logoutTeacher() {
-  localStorage.removeItem('teacherCode');
-  localStorage.removeItem('teacherName');
-  teacher = null;
-  const codeEl = document.getElementById('code');
-  const nyuEl = document.getElementById('nyuCode');
-  if (codeEl) codeEl.value = '';
-  if (nyuEl) nyuEl.value = '';
-  showPage('loginPage');
+function openDatePicker() {
+  const el = document.getElementById('workDate');
+  if (!el) return;
+  try {
+    if (typeof el.showPicker === 'function') {
+      el.showPicker();
+    } else {
+      el.focus();
+      el.click();
+    }
+  } catch (e) {
+    el.focus();
+    el.click();
+  }
 }

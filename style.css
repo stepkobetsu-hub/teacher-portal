@@ -756,173 +756,122 @@ button.back {
 }
 
 
-/* v17 出勤確認：自動ログイン・ログアウト */
-.formTopBar{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  margin-bottom:8px;
-}
-.formTopBar .back{
-  margin:0 !important;
-}
-.formTopBar .logoutMini{
-  width:auto !important;
-  margin:0 !important;
-  padding:8px 12px !important;
-  border-radius:10px !important;
-  background:#fff !important;
-  color:#ef4444 !important;
-  border:2px solid #ef4444 !important;
-  font-size:14px !important;
-  font-weight:900 !important;
+/* v17 fixes */
+
+/* 「〇〇さんとして入力中」は不要なので非表示 */
+.headerName{
+  display:none !important;
 }
 
-
-/* v18 name emphasis: attendance + nyutaikun */
-.formTopBar{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  margin-bottom:8px;
-}
-.formTopBar .back{
-  margin:0 !important;
-}
-.formTopBar .logoutMini,
-.logoutMini{
-  width:auto !important;
-  margin:0 !important;
-  padding:8px 12px !important;
-  border-radius:10px !important;
-  background:#fff !important;
-  color:#ef4444 !important;
-  border:2px solid #ef4444 !important;
-  font-size:14px !important;
-  font-weight:900 !important;
+/* 日付を選べることが分かるようにする */
+.datePickBox{
+  cursor:pointer;
+  position:relative;
+  padding:14px 16px 12px !important;
 }
 
-.attendanceIdentity{
+.datePickBox .dateHint{
+  margin-top:6px;
   text-align:center;
-  margin:8px 0 12px;
-  padding:12px 10px;
-  background:#f8fbff;
-  border:1px solid #e5edf7;
-  border-radius:16px;
-}
-.attendanceCode{
-  color:#1d4ed8;
-  font-weight:900;
-  font-size:13px;
-  margin-bottom:6px;
-}
-.attendanceCode span{
-  display:inline-block;
-  margin-left:6px;
-  font-size:15px;
-  color:#334155;
-}
-.attendanceName{
-  font-size:34px;
-  line-height:1.15;
-  font-weight:900;
-  color:#111827;
-}
-
-/* QR page */
-.qrOnlyPage{
-  min-height:100vh;
-  background:#fff;
-  padding:18px;
-  text-align:center;
-}
-.qrTopBar{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  margin-bottom:18px;
-  padding-bottom:12px;
-  border-bottom:1px solid #e5e7eb;
-}
-.qrTopTitle{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  font-weight:900;
-  font-size:22px;
-  color:#111827;
-}
-.qrTopTitle img{
-  width:44px;
-  height:44px;
-  border-radius:10px;
-}
-.qrTeacherInfo{
-  display:grid;
-  gap:14px;
-  margin:16px 0 20px;
-}
-.qrTeacherInfo div{
-  background:#f8fbff;
-  border:1px solid #e5edf7;
-  border-radius:16px;
-  padding:14px 12px;
-}
-.qrTeacherInfo span{
-  display:block;
-  color:#1d4ed8;
-  font-weight:900;
-  font-size:15px;
-  margin-bottom:6px;
-}
-.qrTeacherInfo strong{
-  display:block;
-  color:#111827;
-  font-weight:900;
-  font-size:38px;
-  line-height:1.15;
-}
-.qrTeacherInfo div:nth-child(2) strong{
-  font-size:46px;
-}
-.large-qr{
-  margin:18px auto 16px !important;
-  padding:16px !important;
-  border-radius:24px !important;
-  border:0 !important;
-  box-shadow:0 8px 24px rgba(15,23,42,.10);
-}
-.large-qr img{
-  width:min(80vw, 370px) !important;
-  height:min(80vw, 370px) !important;
-}
-.qrGuide{
-  color:#475569;
+  color:#64748b;
+  font-size:12px;
   font-weight:800;
-  line-height:1.7;
-  margin:10px 0 18px;
+}
+
+.datePickBox input[type="date"]{
+  position:absolute !important;
+  inset:0 !important;
+  width:100% !important;
+  height:100% !important;
+  opacity:0.01 !important;
+  cursor:pointer !important;
+  z-index:5 !important;
+}
+
+/* 完了画面：入退くんイラスト復活 */
+.nyutaikun-reminder{
+  background:#fff7ed !important;
+  border:1px solid #fed7aa;
+  border-radius:18px !important;
+  padding:18px 14px !important;
+  color:#1d4ed8;
+  font-weight:900;
+  margin:16px 0;
+}
+
+.nyuIllust{
+  position:relative;
+  height:118px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-bottom:8px;
+}
+
+.tabletStand{
+  width:112px;
+  height:82px;
+  border-radius:14px;
+  background:#1f2937;
+  padding:8px;
+  box-shadow:0 10px 20px rgba(15,23,42,.20);
+  transform:rotate(-2deg);
+}
+
+.tabletStand:after{
+  content:"";
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  bottom:10px;
+  width:84px;
+  height:10px;
+  background:#94a3b8;
+  border-radius:999px;
+}
+
+.tabletScreen{
+  height:100%;
+  background:#f8fafc;
+  border-radius:9px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.miniQr{
+  width:48px;
+  height:48px;
+  background:#fff;
+  border:4px solid #111827;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:4px;
+  padding:4px;
+}
+
+.miniQr span{
+  background:#111827;
+}
+
+.phoneScan{
+  position:absolute;
+  right:86px;
+  bottom:16px;
+  font-size:42px;
+  transform:rotate(8deg);
+  filter:drop-shadow(0 6px 8px rgba(15,23,42,.18));
+}
+
+.nyuReminderText{
+  font-size:20px;
+  color:#ea580c;
+  font-weight:900;
+  text-align:center;
 }
 
 @media(max-width:430px){
-  .attendanceName{
-    font-size:30px;
-  }
-  .qrOnlyPage{
-    padding:14px;
-  }
-  .qrTeacherInfo strong{
-    font-size:34px;
-  }
-  .qrTeacherInfo div:nth-child(2) strong{
-    font-size:40px;
-  }
-  .qrTopTitle{
-    font-size:20px;
-  }
-  .logoutMini{
-    font-size:13px !important;
+  .phoneScan{
+    right:54px;
   }
 }

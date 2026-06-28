@@ -85,20 +85,13 @@
 
     <section id="formPage" class="page hidden">
       <div class="card">
-        <div class="formTopBar">
-          <button class="back" onclick="backHome()">← トップへ</button>
-          <button class="logoutMini" onclick="logoutTeacher()">ログアウト</button>
-        </div>
         <div id="hello" class="hello"></div>
-        <div class="attendanceIdentity">
-          <div class="attendanceCode">講師コード <span id="attendanceCodeDisplay">----</span></div>
-          <div class="attendanceName" id="attendanceNameDisplay">----</div>
-        </div>
         <div id="headerName" class="headerName"></div>
 
         <label>出勤日</label>
-        <div class="dateBox">
+        <div class="dateBox datePickBox" onclick="openDatePicker()">
           <div id="dateText" class="dateText"></div>
+          <div class="dateHint">タップして日付を変更</div>
           <input id="workDate" type="date" onchange="updateDateText()">
         </div>
 
@@ -146,7 +139,19 @@
         <div class="doneTitle">送信完了しました</div>
         <div id="completeMessage" class="doneSub"></div>
         <div id="randomMessage" class="randomMessage"></div>
-        <div class="nyutaikun-reminder">入退くんも忘れずにお願いします！</div>
+        <div class="nyutaikun-reminder">
+          <div class="nyuIllust">
+            <div class="tabletStand">
+              <div class="tabletScreen">
+                <div class="miniQr">
+                  <span></span><span></span><span></span><span></span>
+                </div>
+              </div>
+            </div>
+            <div class="phoneScan">📱</div>
+          </div>
+          <div class="nyuReminderText">入退くんも忘れずにね</div>
+        </div>
         <button onclick="backToForm()">続けて入力する</button>
         <button class="secondary" onclick="backHome()">トップページへ戻る</button>
       </div>
