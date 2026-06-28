@@ -1,3 +1,3 @@
-# teacher-portal v16 nyutaikun error fixed
+# teacher-portal v18 name emphasis
 
-入退くんQR画面のnullエラーを修正。ログアウトボタン・Sアイコンは維持。
+出勤確認：保存済みコードなら即入力画面。コード小さめ・氏名大きめ。ログアウトあり。入退くんQRも氏名を大きく表示。

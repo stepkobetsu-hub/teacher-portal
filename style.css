@@ -754,3 +754,175 @@ button.back {
   .qrTopTitle{font-size:20px}
   .logoutMini{font-size:13px !important}
 }
+
+
+/* v17 出勤確認：自動ログイン・ログアウト */
+.formTopBar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:8px;
+}
+.formTopBar .back{
+  margin:0 !important;
+}
+.formTopBar .logoutMini{
+  width:auto !important;
+  margin:0 !important;
+  padding:8px 12px !important;
+  border-radius:10px !important;
+  background:#fff !important;
+  color:#ef4444 !important;
+  border:2px solid #ef4444 !important;
+  font-size:14px !important;
+  font-weight:900 !important;
+}
+
+
+/* v18 name emphasis: attendance + nyutaikun */
+.formTopBar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:8px;
+}
+.formTopBar .back{
+  margin:0 !important;
+}
+.formTopBar .logoutMini,
+.logoutMini{
+  width:auto !important;
+  margin:0 !important;
+  padding:8px 12px !important;
+  border-radius:10px !important;
+  background:#fff !important;
+  color:#ef4444 !important;
+  border:2px solid #ef4444 !important;
+  font-size:14px !important;
+  font-weight:900 !important;
+}
+
+.attendanceIdentity{
+  text-align:center;
+  margin:8px 0 12px;
+  padding:12px 10px;
+  background:#f8fbff;
+  border:1px solid #e5edf7;
+  border-radius:16px;
+}
+.attendanceCode{
+  color:#1d4ed8;
+  font-weight:900;
+  font-size:13px;
+  margin-bottom:6px;
+}
+.attendanceCode span{
+  display:inline-block;
+  margin-left:6px;
+  font-size:15px;
+  color:#334155;
+}
+.attendanceName{
+  font-size:34px;
+  line-height:1.15;
+  font-weight:900;
+  color:#111827;
+}
+
+/* QR page */
+.qrOnlyPage{
+  min-height:100vh;
+  background:#fff;
+  padding:18px;
+  text-align:center;
+}
+.qrTopBar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:18px;
+  padding-bottom:12px;
+  border-bottom:1px solid #e5e7eb;
+}
+.qrTopTitle{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-weight:900;
+  font-size:22px;
+  color:#111827;
+}
+.qrTopTitle img{
+  width:44px;
+  height:44px;
+  border-radius:10px;
+}
+.qrTeacherInfo{
+  display:grid;
+  gap:14px;
+  margin:16px 0 20px;
+}
+.qrTeacherInfo div{
+  background:#f8fbff;
+  border:1px solid #e5edf7;
+  border-radius:16px;
+  padding:14px 12px;
+}
+.qrTeacherInfo span{
+  display:block;
+  color:#1d4ed8;
+  font-weight:900;
+  font-size:15px;
+  margin-bottom:6px;
+}
+.qrTeacherInfo strong{
+  display:block;
+  color:#111827;
+  font-weight:900;
+  font-size:38px;
+  line-height:1.15;
+}
+.qrTeacherInfo div:nth-child(2) strong{
+  font-size:46px;
+}
+.large-qr{
+  margin:18px auto 16px !important;
+  padding:16px !important;
+  border-radius:24px !important;
+  border:0 !important;
+  box-shadow:0 8px 24px rgba(15,23,42,.10);
+}
+.large-qr img{
+  width:min(80vw, 370px) !important;
+  height:min(80vw, 370px) !important;
+}
+.qrGuide{
+  color:#475569;
+  font-weight:800;
+  line-height:1.7;
+  margin:10px 0 18px;
+}
+
+@media(max-width:430px){
+  .attendanceName{
+    font-size:30px;
+  }
+  .qrOnlyPage{
+    padding:14px;
+  }
+  .qrTeacherInfo strong{
+    font-size:34px;
+  }
+  .qrTeacherInfo div:nth-child(2) strong{
+    font-size:40px;
+  }
+  .qrTopTitle{
+    font-size:20px;
+  }
+  .logoutMini{
+    font-size:13px !important;
+  }
+}

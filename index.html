@@ -85,7 +85,15 @@
 
     <section id="formPage" class="page hidden">
       <div class="card">
+        <div class="formTopBar">
+          <button class="back" onclick="backHome()">← トップへ</button>
+          <button class="logoutMini" onclick="logoutTeacher()">ログアウト</button>
+        </div>
         <div id="hello" class="hello"></div>
+        <div class="attendanceIdentity">
+          <div class="attendanceCode">講師コード <span id="attendanceCodeDisplay">----</span></div>
+          <div class="attendanceName" id="attendanceNameDisplay">----</div>
+        </div>
         <div id="headerName" class="headerName"></div>
 
         <label>出勤日</label>
