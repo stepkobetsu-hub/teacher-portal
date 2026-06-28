@@ -100,8 +100,10 @@ async function login() {
     teacher = res.teacher;
     localStorage.setItem('teacherCode', code);
     localStorage.setItem('teacherName', teacher.name || '');
-    document.getElementById('hello').textContent = teacher.name + 'さん、お疲れ様でした！';
-    document.getElementById('headerName').textContent = teacher.name + 'さんとして入力中';
+    document.getElementById('hello').textContent = teacher.code + '　' + teacher.name;
+    const header = document.getElementById('headerName');
+    if (header) header.textContent = '';
+    const headerNameEl = document.getElementById('headerName'); if (headerNameEl) headerNameEl.textContent = '';
     resetForm(false);
     showPage('formPage');
   } catch (err) {
@@ -320,12 +322,9 @@ function openDatePicker() {
   try {
     if (typeof el.showPicker === 'function') {
       el.showPicker();
-    } else {
-      el.focus();
-      el.click();
+      return;
     }
-  } catch (e) {
-    el.focus();
-    el.click();
-  }
+  } catch (e) {}
+  el.focus();
+  el.click();
 }

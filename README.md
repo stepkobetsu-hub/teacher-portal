@@ -1,3 +1,3 @@
-# teacher-portal v17 date complete fixed
+# teacher-portal v18 corrected
 
-日付選択を改善、入力中表示を削除、完了画面の入退くんイラストを復活。
+太字のコード・名前を復活。「〇〇さんとして入力中」を削除。日付変更ボタンを追加。完了画面の入退くんイラストを大きく復活。

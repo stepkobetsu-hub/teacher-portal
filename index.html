@@ -89,11 +89,11 @@
         <div id="headerName" class="headerName"></div>
 
         <label>出勤日</label>
-        <div class="dateBox datePickBox" onclick="openDatePicker()">
+        <div class="dateBox fixedDateBox">
           <div id="dateText" class="dateText"></div>
-          <div class="dateHint">タップして日付を変更</div>
           <input id="workDate" type="date" onchange="updateDateText()">
         </div>
+        <button type="button" class="dateChangeBtn" onclick="openDatePicker()">日付を変更する</button>
 
         <label>本日の担当授業</label>
         <div class="checks">
@@ -139,18 +139,22 @@
         <div class="doneTitle">送信完了しました</div>
         <div id="completeMessage" class="doneSub"></div>
         <div id="randomMessage" class="randomMessage"></div>
-        <div class="nyutaikun-reminder">
-          <div class="nyuIllust">
-            <div class="tabletStand">
-              <div class="tabletScreen">
-                <div class="miniQr">
-                  <span></span><span></span><span></span><span></span>
+        <div class="nyutaikun-reminder bigNyutaikunReminder">
+          <div class="bigNyutaikunTitle">入退くんも忘れずにね</div>
+          <div class="bigNyutaikunIllust">
+            <div class="deskTablet">
+              <div class="tabletCam"></div>
+              <div class="tabletScreenBig">
+                <div class="qrIconBig">
+                  <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
                 </div>
               </div>
+              <div class="tabletBase"></div>
             </div>
-            <div class="phoneScan">📱</div>
+            <div class="scanPhone">📱</div>
+            <div class="scanLine"></div>
           </div>
-          <div class="nyuReminderText">入退くんも忘れずにね</div>
+          <div class="bigNyutaikunText">入口のタブレットでQRを読み取ってください</div>
         </div>
         <button onclick="backToForm()">続けて入力する</button>
         <button class="secondary" onclick="backHome()">トップページへ戻る</button>
