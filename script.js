@@ -1,11 +1,12 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbwP-pEDbbHB-Ec2xO7BFiVYqwpveTnNVmPJkNV08MPD8iAHHq4S7zPyVxDwFEmaHI9-/exec";
 const SUMMER_URL = "https://stepkobetsu-hub.github.io/teacher_schedule/teacher_app.html";
+const MESSAGE_CENTER_URL = "https://stepkobetsu-hub.github.io/step-message-center/";
 let teacher=null;let scanStream=null;let scanTimer=null;
 window.addEventListener('DOMContentLoaded',()=>{const savedCode=localStorage.getItem('teacherCode');if(savedCode){const codeEl=document.getElementById('code');const nyuEl=document.getElementById('nyuCode');if(codeEl)codeEl.value=savedCode;if(nyuEl)nyuEl.value=savedCode;}setToday();setHomeDate();setGreeting();});
 function setGreeting(){const el=document.getElementById('greetingText');if(!el)return;const hour=new Date().getHours();if(hour<11)el.textContent='おはようございます！';else if(hour<17)el.textContent='今日も一緒にがんばりましょう！';else el.textContent='今日もお疲れ様でした！';}
 function setHomeDate(){const el=document.getElementById('homeDate');if(!el)return;const d=new Date();const weeks=['日','月','火','水','木','金','土'];el.textContent=`${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日（${weeks[d.getDay()]}）`;}
 function showPage(id){stopQrScan();['homePage','loginPage','formPage','completePage','nyutaikunLoginPage','nyutaikunQrPage','adminQrPage'].forEach(pageId=>{const el=document.getElementById(pageId);if(el)el.classList.toggle('hidden',pageId!==id);});window.scrollTo({top:0,behavior:'smooth'});}
-function backHome(){showPage('homePage');}function openSummerSchedule(){window.location.href=SUMMER_URL;}function showUnderConstruction(){showToast('工事中です','給与明細は現在準備中です。','🚧');}
+function backHome(){showPage('homePage');}function openMessageCenter(){window.location.href=MESSAGE_CENTER_URL;}function openSummerSchedule(){window.location.href=SUMMER_URL;}function showUnderConstruction(){showToast('工事中です','給与明細は現在準備中です。','🚧');}
 function showAttendance(){const savedCode=localStorage.getItem('teacherCode');if(savedCode){showPage('loginPage');const codeEl=document.getElementById('code');if(codeEl)codeEl.value=savedCode;login();return;}showPage('loginPage');}
 function showNyutaikun(){const savedCode=localStorage.getItem('teacherCode');if(savedCode){showPage('nyutaikunLoginPage');const nyuEl=document.getElementById('nyuCode');if(nyuEl)nyuEl.value=savedCode;loadNyutaikunQr();return;}showPage('nyutaikunLoginPage');}
 function showAdminQr(){showPage('adminQrPage');}
