@@ -18,3 +18,59 @@ body{margin:0;font-family:Arial,"Hiragino Sans","Yu Gothic",sans-serif;backgroun
 .staffLinkBtn:active{
   transform:scale(.97);
 }
+
+.staffLinkBtn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  max-width:100%;
+  box-sizing:border-box;
+  line-height:1.35;
+  box-shadow:0 6px 14px rgba(15,23,42,.06);
+}
+.staffLinkBtn:hover,
+.staffLinkBtn:focus-visible{
+  background:#eef6ff;
+  color:#1d4ed8;
+  border-color:#bfdbfe;
+}
+.menuBtn span:nth-child(2){
+  min-width:0;
+}
+.menuBtn strong,
+.menuBtn small{
+  overflow-wrap:anywhere;
+}
+.menuBtn b{
+  flex-shrink:0;
+}
+.menuBtn:focus-visible,
+button:focus-visible,
+.staffLinkBtn:focus-visible{
+  outline:3px solid rgba(37,99,235,.35);
+  outline-offset:3px;
+}
+@media(max-width:430px){
+  .app{max-width:none;box-shadow:none}
+  .topHero{height:218px;border-radius:0 0 24px 24px}
+  .heroInner{gap:12px;padding-top:48px}
+  .heroIcon{width:72px;height:72px;border-radius:18px}
+  .heroStep{font-size:38px}
+  .heroTitle{font-size:17px}
+  .mainArea{padding:0 14px 18px}
+  .datePill{height:54px;gap:8px}
+  .datePill span{font-size:23px}
+  .datePill strong{font-size:16px}
+  .menuList{gap:10px}
+  .menuBtn{min-height:72px;border-radius:16px;padding:10px 12px;gap:10px}
+  .menuIcon{width:46px;height:46px;font-size:22px}
+  .menuBtn strong{font-size:18px}
+  .menuBtn small{font-size:11px}
+  .menuBtn b{font-size:30px}
+  .card{border-radius:18px;padding:18px;margin-top:8px}
+  h2{font-size:23px}
+  .checks label{font-size:17px;padding:9px 10px}
+  .qrTeacherInfo strong{font-size:28px}
+  .qrTeacherInfo div:nth-child(2) strong{font-size:31px}
+  .staffLinkBtn{width:100%;padding:11px 14px;font-size:14px}
+}
