@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>個別指導STEP 講師ポータル</title>
-  <link rel="stylesheet" href="style.css?v=20260706-1">
+  <link rel="stylesheet" href="style.css?v=20260706-2">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="images/app-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32.png">
@@ -57,6 +57,14 @@
       </div>
       <div class="staffLinkArea">
         <a class="staffLinkBtn" href="https://stepkobetsu-hub.github.io/seiseki-kanri/">🔐 スタッフ用アプリ</a>
+      </div>
+      <div class="portalShareArea">
+        <button class="portalShareBtn" type="button" onclick="togglePortalShare()">📱 講師ポータルURL・QR</button>
+        <div id="portalShareBox" class="portalShareBox hidden">
+          <div class="portalShareLabel">講師ポータルURL</div>
+          <a id="portalShareUrl" class="portalShareUrl" href="https://stepkobetsu-hub.github.io/teacher-portal/">https://stepkobetsu-hub.github.io/teacher-portal/</a>
+          <img id="portalShareQr" class="portalShareQr" alt="講師ポータルQRコード">
+        </div>
       </div>
     </div>
   </section>
@@ -205,6 +213,6 @@
     <button onclick="hideToast()">OK</button>
   </div>
 </div>
-<script src="script.js?v=20260706-1"></script>
+<script src="script.js?v=20260706-2"></script>
 </body>
 </html>

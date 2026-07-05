@@ -19,6 +19,58 @@ body{margin:0;font-family:Arial,"Hiragino Sans","Yu Gothic",sans-serif;backgroun
   transform:scale(.97);
 }
 
+.portalShareArea{
+  margin:8px 0 0;
+  text-align:center;
+}
+.portalShareBtn{
+  width:auto;
+  margin:0;
+  padding:8px 13px;
+  border-radius:999px;
+  background:#fff;
+  color:#1d4ed8;
+  border:1px solid #bfdbfe;
+  font-size:12px;
+  font-weight:900;
+  line-height:1.35;
+  box-shadow:0 5px 12px rgba(37,99,235,.08);
+}
+.portalShareBox{
+  width:min(300px,100%);
+  box-sizing:border-box;
+  margin:10px auto 0;
+  padding:12px;
+  border:1px solid #dbeafe;
+  border-radius:16px;
+  background:#f8fbff;
+  box-shadow:0 8px 18px rgba(37,99,235,.08);
+}
+.portalShareLabel{
+  color:#475569;
+  font-size:12px;
+  font-weight:900;
+  margin-bottom:6px;
+}
+.portalShareUrl{
+  display:block;
+  color:#1d4ed8;
+  font-size:12px;
+  font-weight:800;
+  line-height:1.45;
+  overflow-wrap:anywhere;
+  text-decoration:underline;
+}
+.portalShareQr{
+  display:block;
+  width:132px;
+  height:132px;
+  margin:10px auto 0;
+  border-radius:10px;
+  background:#fff;
+  border:1px solid #e5e7eb;
+}
+
 .staffLinkBtn{
   display:inline-flex;
   align-items:center;
@@ -73,4 +125,6 @@ button:focus-visible,
   .qrTeacherInfo strong{font-size:28px}
   .qrTeacherInfo div:nth-child(2) strong{font-size:31px}
   .staffLinkBtn{width:100%;padding:11px 14px;font-size:14px}
+  .portalShareBtn{width:100%;padding:10px 14px;font-size:13px}
+  .portalShareBox{width:100%}
 }

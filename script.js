@@ -1,6 +1,7 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbwP-pEDbbHB-Ec2xO7BFiVYqwpveTnNVmPJkNV08MPD8iAHHq4S7zPyVxDwFEmaHI9-/exec";
 const SUMMER_URL = "https://stepkobetsu-hub.github.io/teacher_schedule/teacher_app.html";
 const PAYSLIP_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxCpmgFEPaEl7EykKO1MrXDCQqg_-ww8AgfVLa6WSpD6sYuUj4pG07DwI0KizIUI7Z9/exec";
+const TEACHER_PORTAL_URL = "https://stepkobetsu-hub.github.io/teacher-portal/";
 
 let teacher = null;
 let scanStream = null;
@@ -17,6 +18,7 @@ window.addEventListener("DOMContentLoaded", () => {
   setToday();
   setHomeDate();
   setGreeting();
+  setupPortalShare();
 });
 
 function setGreeting() {
@@ -63,6 +65,24 @@ function openPayslip() {
 
 function showUnderConstruction() {
   openPayslip();
+}
+
+function setupPortalShare() {
+  const urlEl = document.getElementById("portalShareUrl");
+  const qrEl = document.getElementById("portalShareQr");
+  if (urlEl) {
+    urlEl.href = TEACHER_PORTAL_URL;
+    urlEl.textContent = TEACHER_PORTAL_URL;
+  }
+  if (qrEl) {
+    qrEl.src = "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=" + encodeURIComponent(TEACHER_PORTAL_URL);
+  }
+}
+
+function togglePortalShare() {
+  const box = document.getElementById("portalShareBox");
+  if (!box) return;
+  box.classList.toggle("hidden");
 }
 
 function showAttendance() {
