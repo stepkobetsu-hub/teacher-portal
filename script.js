@@ -1,6 +1,6 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbwP-pEDbbHB-Ec2xO7BFiVYqwpveTnNVmPJkNV08MPD8iAHHq4S7zPyVxDwFEmaHI9-/exec";
 const SUMMER_URL = "https://stepkobetsu-hub.github.io/teacher_schedule/teacher_app.html";
-const PAYSLIP_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxCpmgFEPaEl7EykKO1MrXDCQqg_-ww8AgfVLa6WSpD6sYuUj4pG07DwI0KizIUI7Z9/exec";
+const PAYSLIP_WEB_APP_URL = "./salary.html";
 const TEACHER_PORTAL_URL = "https://stepkobetsu-hub.github.io/teacher-portal/";
 
 let teacher = null;
