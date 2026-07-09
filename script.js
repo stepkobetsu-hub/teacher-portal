@@ -201,19 +201,6 @@ function updateDateText() {
   document.getElementById("dateText").textContent = `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日（${weeks[d.getDay()]}）`;
 }
 
-function openDatePicker() {
-  const el = document.getElementById("workDate");
-  if (!el) return;
-  try {
-    if (typeof el.showPicker === "function") {
-      el.showPicker();
-      return;
-    }
-  } catch (e) {}
-  el.focus();
-  el.click();
-}
-
 function toggleOther() {
   const koma = document.getElementById("koma").value;
   document.getElementById("otherBox").classList.toggle("hidden", koma !== "その他");

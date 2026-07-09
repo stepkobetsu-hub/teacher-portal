@@ -128,3 +128,35 @@ button:focus-visible,
   .portalShareBtn{width:100%;padding:10px 14px;font-size:13px}
   .portalShareBox{width:100%}
 }
+
+.date-change-area {
+  margin: 12px 0 16px;
+  text-align: center;
+}
+
+.date-change-label {
+  display: block;
+  font-weight: 900;
+  margin: 0 0 8px;
+  color: #333;
+}
+
+.date-change-input {
+  width: 100%;
+  max-width: 320px;
+  height: 48px;
+  padding: 0 14px;
+  font-size: 17px;
+  font-weight: 900;
+  border: 2px solid #2563eb;
+  border-radius: 12px;
+  background: #fff;
+  color: #111827;
+  box-sizing: border-box;
+  -webkit-appearance: auto;
+  appearance: auto;
+}
+
+.date-change-input:focus {
+  outline: 3px solid rgba(37, 99, 235, 0.25);
+}

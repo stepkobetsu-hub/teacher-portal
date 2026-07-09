@@ -91,8 +91,10 @@
       </div>
       <label>出勤日</label>
       <div class="dateBox"><div id="dateText" class="dateText"></div></div>
-      <button type="button" class="dateChangeBtn" onclick="openDatePicker()">日付を変更する</button>
-      <input id="workDate" class="dateInputHidden" type="date" onchange="updateDateText()">
+      <div class="date-change-area">
+        <label for="workDate" class="date-change-label">出勤日を変更</label>
+        <input id="workDate" class="date-change-input" type="date" onchange="updateDateText()">
+      </div>
       <label>本日の担当授業</label>
       <div class="checks">
         <label><input type="checkbox" value="13:00～14:15">13:00～14:15</label>
@@ -213,6 +215,6 @@
     <button onclick="hideToast()">OK</button>
   </div>
 </div>
-<script src="script.js?v=20260709-salary"></script>
+<script src="script.js?v=20260709-date"></script>
 </body>
 </html>
