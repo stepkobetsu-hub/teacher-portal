@@ -93,7 +93,7 @@
       <div class="dateBox"><div id="dateText" class="dateText"></div></div>
       <div class="date-change-area">
         <label for="workDate" class="date-change-label">出勤日を変更</label>
-        <input id="workDate" class="date-change-input" type="date" onchange="updateDateText()">
+        <input id="workDate" class="date-change-input" type="date" onclick="openWorkDatePicker()" onchange="updateDateText()">
       </div>
       <label>本日の担当授業</label>
       <div class="checks">
@@ -215,6 +215,6 @@
     <button onclick="hideToast()">OK</button>
   </div>
 </div>
-<script src="script.js?v=20260709-date"></script>
+<script src="script.js?v=20260709-date-picker"></script>
 </body>
 </html>
