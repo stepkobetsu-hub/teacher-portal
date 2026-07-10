@@ -60,7 +60,7 @@ function openPayslip() {
     showToast("準備中です", "給与明細WebアプリURLを設定してください。", "⚠️");
     return;
   }
-  window.location.href = PAYSLIP_WEB_APP_URL;
+  window.location.assign(PAYSLIP_WEB_APP_URL);
 }
 
 function showUnderConstruction() {

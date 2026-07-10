@@ -89,6 +89,10 @@ body{margin:0;font-family:Arial,"Hiragino Sans","Yu Gothic",sans-serif;backgroun
 .menuBtn span:nth-child(2){
   min-width:0;
 }
+.menuBtn{
+  box-sizing:border-box;
+  text-decoration:none;
+}
 .menuBtn strong,
 .menuBtn small{
   overflow-wrap:anywhere;
