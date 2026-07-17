@@ -31,17 +31,17 @@
       <div class="heroWave"></div>
     </div>
     <div class="mainArea">
-      <div id="greetingText" class="greeting">今日も一緒にがんばりましょう！</div>
+      <div id="greetingText" class="greeting">こんにちは！</div>
       <div class="datePill"><span>📅</span><strong id="homeDate">----</strong></div>
       <div class="menuList">
         <button class="menuBtn green" onclick="showAttendance()">
           <span class="menuIcon">📋</span>
-          <span><strong>出勤確認</strong><small>授業後の出勤確認</small></span>
+          <span><strong>授業報告</strong><small>授業後の授業報告</small></span>
           <b>›</b>
         </button>
         <button class="menuBtn blue" onclick="showNyutaikun()">
           <span class="menuIcon">▦</span>
-          <span><strong>入退くんQR</strong><small>入退くんのQRを表示</small></span>
+          <span><strong>出退くんQR</strong><small>出退くんのQRを表示</small></span>
           <b>›</b>
         </button>
         <button class="menuBtn yellow" onclick="openSummerSchedule()">
@@ -72,7 +72,7 @@
   <section id="loginPage" class="page hidden">
     <div class="card">
       <button class="back" onclick="backHome()">← トップへ</button>
-      <h2>出勤確認ログイン</h2>
+      <h2>授業報告ログイン</h2>
       <p class="lead">講師コードを入力してください。</p>
       <label>講師コード</label>
       <input id="code" type="text" inputmode="numeric" placeholder="例：7085">
@@ -161,7 +161,7 @@
   <section id="nyutaikunLoginPage" class="page hidden">
     <div class="card">
       <button class="back" onclick="backHome()">← トップへ</button>
-      <h2>入退くんQR</h2>
+      <h2>出退くんQR</h2>
       <p class="lead">講師コードを入力してください。次回から記憶されます。</p>
       <label>講師コード</label>
       <input id="nyuCode" type="text" inputmode="numeric" placeholder="例：7085">
@@ -190,7 +190,7 @@
     <div class="card">
       <button class="back" onclick="backHome()">← トップへ</button>
       <h2>管理者：QR登録</h2>
-      <p class="lead">紙の入退くんQRを読み取り、講師マスターQ列に保存します。</p>
+      <p class="lead">紙の出退くんQRを読み取り、講師マスターQ列に保存します。</p>
       <label>講師コード</label>
       <input id="adminCode" type="text" inputmode="numeric" placeholder="例：7085">
       <div class="scannerBox">

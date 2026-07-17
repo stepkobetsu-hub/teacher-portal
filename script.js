@@ -24,10 +24,9 @@ window.addEventListener("DOMContentLoaded", () => {
 function setGreeting() {
   const el = document.getElementById("greetingText");
   if (!el) return;
-  const hour = new Date().getHours();
-  if (hour < 11) el.textContent = "おはようございます！";
-  else if (hour < 17) el.textContent = "今日も一緒にがんばりましょう！";
-  else el.textContent = "今日もお疲れ様でした！";
+  const now = new Date();
+  const minutes = now.getHours() * 60 + now.getMinutes();
+  el.textContent = minutes <= 20 * 60 + 30 ? "こんにちは！" : "お疲れ様でした！";
 }
 
 function setHomeDate() {
@@ -250,7 +249,7 @@ async function submitForm() {
     const res = await jsonp(data);
     if (!res.ok) throw new Error(res.message || "送信できませんでした。");
     const name = res.name || teacher.name;
-    document.getElementById("completeMessage").textContent = `${name}さん、お疲れ様でした。出勤確認を受け付けました。`;
+    document.getElementById("completeMessage").textContent = `${name}さん、お疲れ様でした。授業報告を受け付けました。`;
     document.getElementById("randomMessage").textContent = randomMessage();
     showPage("completePage");
   } catch (err) {
@@ -315,11 +314,11 @@ async function loadNyutaikunQr() {
     const t = res.teacher;
     localStorage.setItem("teacherCode", code);
     localStorage.setItem("teacherName", t.name || "");
-    if (!t.qrData) throw new Error("この講師の入退くんQRデータが未登録です。管理者に確認してください。");
+    if (!t.qrData) throw new Error("この講師の出退くんQRデータが未登録です。管理者に確認してください。");
     document.getElementById("nyuCodeDisplay").textContent = code;
     document.getElementById("nyuNameDisplay").textContent = t.name || "";
     const qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=360x360&data=" + encodeURIComponent(t.qrData);
-    document.getElementById("qrDisplay").innerHTML = '<img alt="入退くんQR" src="' + qrUrl + '">';
+    document.getElementById("qrDisplay").innerHTML = '<img alt="出退くんQR" src="' + qrUrl + '">';
     showPage("nyutaikunQrPage");
   } catch (err) {
     if (msg) {
