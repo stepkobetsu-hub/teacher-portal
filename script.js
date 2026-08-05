@@ -99,10 +99,26 @@ function showAttendance() {
 function showNyutaikun() {
   const savedCode = localStorage.getItem("teacherCode");
   if (savedCode) {
-    showPage("nyutaikunLoginPage");
     const nyuEl = document.getElementById("nyuCode");
     if (nyuEl) nyuEl.value = savedCode;
-    loadNyutaikunQr();
+
+    const cachedQrCode = localStorage.getItem("teacherQrCode");
+    const cachedQrData = localStorage.getItem("teacherQrData");
+    const cachedName = localStorage.getItem("teacherName") || "";
+
+    if (cachedQrCode === savedCode && cachedQrData) {
+      renderNyutaikunQr(savedCode, cachedName, cachedQrData);
+      showPage("nyutaikunQrPage");
+      return;
+    }
+
+    // 既存端末にはQRデータの保存がまだないため、入力画面を挟まず
+    // QR画面へ直接進み、その画面内で初回だけデータを取得する。
+    document.getElementById("nyuCodeDisplay").textContent = savedCode;
+    document.getElementById("nyuNameDisplay").textContent = cachedName || "確認中…";
+    document.getElementById("qrDisplay").innerHTML = '<div class="sending">QRコードを準備しています…</div>';
+    showPage("nyutaikunQrPage");
+    loadNyutaikunQr(savedCode, true);
     return;
   }
   showPage("nyutaikunLoginPage");
@@ -166,8 +182,7 @@ async function login() {
       return;
     }
     teacher = res.teacher;
-    localStorage.setItem("teacherCode", code);
-    localStorage.setItem("teacherName", teacher.name || "");
+    saveTeacherSession(code, teacher);
     document.getElementById("teacherCodeDisplay").textContent = code;
     document.getElementById("teacherNameDisplay").textContent = teacher.name || "";
     resetForm(false);
@@ -288,16 +303,38 @@ function backToForm() {
 }
 
 function logoutAttendance() {
-  localStorage.removeItem("teacherCode");
-  localStorage.removeItem("teacherName");
+  clearTeacherSession();
   teacher = null;
   document.getElementById("code").value = "";
   document.getElementById("nyuCode").value = "";
   backHome();
 }
 
-async function loadNyutaikunQr() {
-  const code = document.getElementById("nyuCode").value.trim();
+function saveTeacherSession(code, data) {
+  localStorage.setItem("teacherCode", code);
+  localStorage.setItem("teacherName", data.name || "");
+  if (data.qrData) {
+    localStorage.setItem("teacherQrCode", code);
+    localStorage.setItem("teacherQrData", data.qrData);
+  }
+}
+
+function clearTeacherSession() {
+  localStorage.removeItem("teacherCode");
+  localStorage.removeItem("teacherName");
+  localStorage.removeItem("teacherQrCode");
+  localStorage.removeItem("teacherQrData");
+}
+
+function renderNyutaikunQr(code, name, qrData) {
+  document.getElementById("nyuCodeDisplay").textContent = code;
+  document.getElementById("nyuNameDisplay").textContent = name || "";
+  const qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=360x360&data=" + encodeURIComponent(qrData);
+  document.getElementById("qrDisplay").innerHTML = '<img alt="出退くんQR" loading="eager" src="' + qrUrl + '">';
+}
+
+async function loadNyutaikunQr(codeOverride = "", alreadyOnQrPage = false) {
+  const code = String(codeOverride || document.getElementById("nyuCode").value).trim();
   const msg = document.getElementById("nyuMsg");
   if (msg) msg.classList.add("hidden");
   if (!code) {
@@ -312,16 +349,20 @@ async function loadNyutaikunQr() {
     const res = await jsonp({ action: "getTeacher", code });
     if (!res.ok) throw new Error(res.message || "講師コードが見つかりません。");
     const t = res.teacher;
-    localStorage.setItem("teacherCode", code);
-    localStorage.setItem("teacherName", t.name || "");
     if (!t.qrData) throw new Error("この講師の出退くんQRデータが未登録です。管理者に確認してください。");
-    document.getElementById("nyuCodeDisplay").textContent = code;
-    document.getElementById("nyuNameDisplay").textContent = t.name || "";
-    const qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=360x360&data=" + encodeURIComponent(t.qrData);
-    document.getElementById("qrDisplay").innerHTML = '<img alt="出退くんQR" src="' + qrUrl + '">';
-    showPage("nyutaikunQrPage");
+    saveTeacherSession(code, t);
+    renderNyutaikunQr(code, t.name, t.qrData);
+    if (!alreadyOnQrPage) showPage("nyutaikunQrPage");
   } catch (err) {
-    if (msg) {
+    if (alreadyOnQrPage) {
+      document.getElementById("nyuNameDisplay").textContent = localStorage.getItem("teacherName") || "";
+      const qrDisplay = document.getElementById("qrDisplay");
+      qrDisplay.innerHTML = "";
+      const errorMessage = document.createElement("div");
+      errorMessage.className = "noticeMsg";
+      errorMessage.textContent = err.message || "QRコードを表示できませんでした。";
+      qrDisplay.appendChild(errorMessage);
+    } else if (msg) {
       msg.textContent = err.message || "QRコードを表示できませんでした。";
       msg.classList.remove("hidden");
     } else {
@@ -331,8 +372,7 @@ async function loadNyutaikunQr() {
 }
 
 function logoutNyutaikun() {
-  localStorage.removeItem("teacherCode");
-  localStorage.removeItem("teacherName");
+  clearTeacherSession();
   teacher = null;
   document.getElementById("code").value = "";
   document.getElementById("nyuCode").value = "";
