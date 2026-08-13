@@ -19,7 +19,19 @@ window.addEventListener("DOMContentLoaded", () => {
   setHomeDate();
   setGreeting();
   setupPortalShare();
+  openRequestedView();
 });
+
+function openRequestedView() {
+  const view = new URLSearchParams(window.location.search).get("view");
+  if (view === "attendance") showAttendance();
+  if (view === "qr") showNyutaikun();
+}
+
+function clearRequestedView() {
+  if (!new URLSearchParams(window.location.search).has("view")) return;
+  window.history.replaceState(null, "", window.location.pathname);
+}
 
 function setGreeting() {
   const el = document.getElementById("greetingText");
@@ -47,6 +59,7 @@ function showPage(id) {
 }
 
 function backHome() {
+  clearRequestedView();
   showPage("homePage");
 }
 
