@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer"><meta name="robots" content="noindex,nofollow">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src https://script.google.com https://script.googleusercontent.com; img-src 'self' data:; base-uri 'none'; form-action 'none'; object-src 'none'">
+<title>講師初期登録・登録情報の変更｜個別指導STEP</title>
+<link rel="icon" href="images/favicon.png"><link rel="stylesheet" href="registration.css?v=20260912-1">
+<script src="registration.js?v=20260912-1" defer></script>
+</head>
+<body>
+<main>
+<a class="back" href="./">← 講師ポータル</a>
+<header><span class="brand">個別指導 STEP</span><h1>講師初期登録</h1><p>はじめの登録も、あとからの追加入力も。</p></header>
+<div id="message" class="notice" role="status" aria-live="polite" hidden></div>
+<section id="entry">
+  <div class="tabs" role="group" aria-label="手続きの選択">
+    <button id="newTab" type="button" aria-pressed="true">はじめての登録</button>
+    <button id="loginTab" type="button" aria-pressed="false">登録情報を変更</button>
+    <button id="setupTab" type="button" aria-pressed="false">パスワード設定・再設定</button>
+  </div>
+  <form id="loginForm" hidden>
+    <h2>講師番号でログイン</h2>
+    <label>講師番号<input name="teacherCode" autocomplete="username" inputmode="numeric" pattern="7[0-9]{3}" maxlength="4" required></label>
+    <label>パスワード<input name="password" type="password" autocomplete="current-password" required maxlength="128"></label>
+    <button class="primary" type="submit">ログインして編集する</button>
+    <p class="hint">まだパスワードを設定していない方・忘れた方は、教室から登録コードを受け取り「パスワード設定・再設定」へ進んでください。</p>
+  </form>
+  <form id="enrollForm" autocomplete="off">
+    <div id="registrationIntro"><h2>はじめて登録する方</h2><p>姓・名、フリガナ、メールアドレスを入力してください。銀行口座などは後日追加できます。</p></div>
+    <div id="setupIntro" hidden><h2>パスワード設定・再設定</h2><p>登録済みの講師の方はこちら。教室から本人用の登録コードを受け取ってください。登録済みの情報は消えません。</p></div>
+    <label>教室から受け取った登録コード<input name="registrationCode" required maxlength="64" autocapitalize="off" spellcheck="false"></label>
+    <div class="two">
+      <label>パスワードを設定<input name="password" type="password" autocomplete="new-password" minlength="12" maxlength="128" required><small>12文字以上。半角英字・数字などを組み合わせてください。</small></label>
+      <label>パスワード（確認）<input name="passwordConfirm" type="password" autocomplete="new-password" minlength="12" maxlength="128" required></label>
+    </div>
+    <div id="newFields"></div>
+    <label class="check"><input name="consent" type="checkbox" required>入力した情報を、講師の登録・給与振込・税務手続き・業務連絡のため教室へ提出します。</label>
+    <button id="enrollButton" class="primary" type="submit">内容を確認する</button>
+  </form>
+</section>
+<section id="editor" hidden>
+  <div class="account"><div><small>講師番号</small><strong id="teacherCodeDisplay"></strong><span id="teacherNameDisplay"></span></div><button id="logout" type="button">ログアウト</button></div>
+  <h2>登録情報の確認・変更</h2><p>変更した項目だけ保存します。空欄のままの項目は、現在の登録内容を残します。</p>
+  <form id="editForm" autocomplete="off"><div id="editFields"></div><button class="primary" type="submit">変更内容を確認する</button></form>
+</section>
+<section id="review" hidden>
+  <h2>入力内容の確認</h2><p>内容を確認してから保存してください。</p><dl id="reviewValues"></dl>
+  <div class="actions"><button id="reviewBack" type="button">戻って修正</button><button id="reviewSave" type="button" class="primary">この内容で保存する</button></div>
+</section>
+<details id="admin"><summary>教室スタッフ：登録コードの発行</summary>
+  <p>権限2・3・4のスタッフが、新規登録または既存講師のパスワード設定用コードを発行します。有効期限は7日間、1回のみ使用できます。</p>
+  <form id="inviteForm">
+    <label>スタッフID<input name="staffCode" autocomplete="username" required></label>
+    <label>スタッフパスワード<input name="staffPassword" type="password" autocomplete="current-password" required></label>
+    <label>対象の講師番号<input name="teacherCode" inputmode="numeric" pattern="7[0-9]{3}" maxlength="4"><small>新しい講師の登録は空欄。既存講師の設定・再設定は、その講師番号を入力してください。</small></label>
+    <button type="submit">登録コードを発行する</button>
+  </form>
+  <div id="inviteResult" hidden><p id="invitePurpose"></p><label>本人へ渡す登録コード<textarea id="inviteCode" readonly rows="3"></textarea></label><button id="copyInvite" type="button">コードをコピー</button></div>
+</details>
+<footer>口座情報・マイナンバーをこの端末に保存しません。共有端末では、利用後にログアウトしてください。</footer>
+</main>
+</body>
+</html>
