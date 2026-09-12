@@ -87,7 +87,9 @@ function modeChange(value){
   $('review').hidden=true;$('success').hidden=true;$('entry').hidden=false;$('editor').hidden=true;
   $('loginForm').hidden=value!=='login';$('enrollForm').hidden=value==='login';
   $('newFields').hidden=value!=='new';$('registrationIntro').hidden=value!=='new';$('setupIntro').hidden=value!=='setup';
-  $('newFields').querySelectorAll('input,select').forEach(el=>{el.disabled=value!=='new';el.required=value==='new'&&['surname','givenName','surnameKana','givenNameKana','email'].includes(el.name);});
+  $('enrollPasswordFields').hidden=value==='new';$('automaticPasswordNotice').hidden=value!=='new';
+  $('enrollForm').elements.password.required=value==='setup';$('enrollForm').elements.passwordConfirm.required=value==='setup';
+  $('newFields').querySelectorAll('input,select').forEach(el=>{el.disabled=value!=='new';el.required=value==='new'&&['surname','givenName','surnameKana','givenNameKana','birthDate','email'].includes(el.name);});
   ['new','login'].forEach(v=>$(v+'Tab').setAttribute('aria-pressed',String(value===v)));
 }
 function getFields(form,isNew){
@@ -145,11 +147,19 @@ $('loginForm').addEventListener('submit',e=>{e.preventDefault();task(async()=>{
   const result=await api('Login',{teacherCode:code,proof,password:f.elements.password.value});showProfile(result,'ログインしました。銀行口座などを追加入力・修正できます。');
 });});
 $('enrollForm').addEventListener('submit',e=>{e.preventDefault();task(async()=>{
-  const f=e.target;if(f.elements.password.value!==f.elements.passwordConfirm.value)throw new Error('確認用パスワードが一致しません。');
-  if(f.elements.password.value.length<4)throw new Error('パスワードは4文字以上で設定してください。');
-  if(!enrollmentSalt)enrollmentSalt=hex(crypto.getRandomValues(new Uint8Array(16)));
+  const f=e.target;
   const fields=mode==='new'?getFields(f,true):{};
-  pending={kind:mode,fields,registrationCode:f.elements.registrationCode.value.trim(),salt:enrollmentSalt,proof:await passwordProof(f.elements.password.value,enrollmentSalt)};
+  let enrollmentPassword=f.elements.password.value;
+  if(mode==='new'){
+    const match=String(fields.birthDate||'').match(/^\d{4}-(\d{2})-(\d{2})$/);
+    if(!match)throw new Error('生年月日を入力してください。');
+    enrollmentPassword=match[1]+match[2];
+  }else{
+    if(enrollmentPassword!==f.elements.passwordConfirm.value)throw new Error('確認用パスワードが一致しません。。');
+    if(enrollmentPassword.length<4)throw new Error('パスワードは4文字以上で設定してください。。');
+  }
+  if(!enrollmentSalt)enrollmentSalt=hex(crypto.getRandomValues(new Uint8Array(16)));
+  pending={kind:mode,fields,registrationCode:f.elements.registrationCode.value.trim(),salt:enrollmentSalt,password:enrollmentPassword,proof:await passwordProof(enrollmentPassword,enrollmentSalt)};
   notice('');review(fields,mode);
 });});
 $('passwordChangeForm').addEventListener('submit',e=>{e.preventDefault();task(async()=>{
@@ -173,7 +183,7 @@ $('reviewBack').addEventListener('click',()=>{
 $('reviewSave').addEventListener('click',()=>task(async()=>{
   if(!pending)return;notice('保存しています。画面を閉じずにお待ちください…');
   const editing=pending.kind==='edit';
-  const result=editing?await api('Save',{token,fields:pending.fields,revision:pending.revision}):await api('Enroll',{mode:pending.kind,fields:pending.fields,registrationCode:pending.registrationCode,salt:pending.salt,proof:pending.proof});
+  const result=editing?await api('Save',{token,fields:pending.fields,revision:pending.revision}):await api('Enroll',{mode:pending.kind,fields:pending.fields,registrationCode:pending.registrationCode,salt:pending.salt,password:pending.password,proof:pending.proof});
   showProfile(result,editing?'変更内容を保存しました。':'登録できました。講師番号は '+result.code+' です。今後はこの番号とパスワードでログインしてください。',true);
 }));
 $('editAfterSave').addEventListener('click',()=>{
@@ -239,7 +249,7 @@ function receiveInvite(){
   if(!receivedInvite)return;
   modeChange(receivedInvite.mode);
   $('enrollForm').elements.registrationCode.value=receivedInvite.code;
-  notice(receivedInvite.mode==='setup'?'登録コードを読み込みました。ご自分のパスワードを設定してください。':'登録コードを読み込みました。ご自分のパスワードと必要事項を入力してください。');
+  notice(receivedInvite.mode==='setup'?'登録コードを読み込みました。ご自分のパスワードを設定してください。':'登録コードを読み込みました。必要事項を入力してください。初期パスワードは生年月日の月日4桁で自動設定されます。');
 }
 modeChange('new');
 receiveInvite();
