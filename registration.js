@@ -84,7 +84,7 @@ function bankUI(prefix,form,changed){
 }
 function modeChange(value){
   mode=value;pending=null;enrollmentSalt='';notice('');$('admin').hidden=value!=='new';
-  $('review').hidden=true;$('entry').hidden=false;$('editor').hidden=true;
+  $('review').hidden=true;$('success').hidden=true;$('entry').hidden=false;$('editor').hidden=true;
   $('loginForm').hidden=value!=='login';$('enrollForm').hidden=value==='login';
   $('newFields').hidden=value!=='new';$('registrationIntro').hidden=value!=='new';$('setupIntro').hidden=value!=='setup';
   $('newFields').querySelectorAll('input,select').forEach(el=>{el.disabled=value!=='new';el.required=value==='new'&&['surname','givenName','surnameKana','givenNameKana','email'].includes(el.name);});
@@ -121,17 +121,19 @@ function review(values,kind){
   $('entry').hidden=true;$('editor').hidden=true;$('review').hidden=false;
   $('review').scrollIntoView({behavior:'smooth'});
 }
-function showProfile(result,success){
+function showProfile(result,success,completed=false){
   if(result.token)token=result.token;
   profile=result.profile;pending=null;enrollmentSalt='';$('admin').hidden=true;$('admin').open=false;$('inviteForm').reset();
-  $('entry').hidden=true;$('review').hidden=true;$('editor').hidden=false;
+  $('entry').hidden=true;$('review').hidden=true;$('success').hidden=!completed;$('editor').hidden=completed;
   $('teacherCodeDisplay').textContent=profile.code;$('teacherNameDisplay').textContent=profile.fullName;
   const form=$('editForm');Object.keys(labels).forEach(k=>{form.elements[k].value=k==='myNumber'?'':profile[k]||'';});
   form.elements.bankChoice.value=profile.bankCode==='9900'?'yucho':profile.bankCode?'other':'';
   bankUI('edit-',form,false);
   $('edit-myNumberState').textContent=profile.hasMyNumber?'マイナンバー：登録済み（番号は表示しません）':'マイナンバー：未登録';
   $('edit-legacyName').textContent=!profile.surname?'登録済みのお名前：'+profile.fullName+' ／ '+profile.fullKana+'。お名前を修正するときは姓・名を分けて入力してください。':'';
-  $('enrollForm').reset();$('loginForm').reset();$('passwordChangeForm').reset();$('passwordChangePanel').open=passwordChangeRequested;notice(success);
+  $('enrollForm').reset();$('loginForm').reset();$('passwordChangeForm').reset();$('passwordChangePanel').open=passwordChangeRequested;
+  $('successText').textContent=success;notice(completed?'':success);
+  if(completed)$('success').scrollIntoView({behavior:'smooth',block:'center'});
 }
 $('newFields').innerHTML=fieldsHTML('new-');$('editFields').innerHTML=fieldsHTML('edit-');
 setupFields('new-',$('enrollForm'));setupFields('edit-',$('editForm'));
@@ -172,7 +174,16 @@ $('reviewSave').addEventListener('click',()=>task(async()=>{
   if(!pending)return;notice('保存しています。画面を閉じずにお待ちください…');
   const editing=pending.kind==='edit';
   const result=editing?await api('Save',{token,fields:pending.fields,revision:pending.revision}):await api('Enroll',{mode:pending.kind,fields:pending.fields,registrationCode:pending.registrationCode,salt:pending.salt,proof:pending.proof});
-  showProfile(result,editing?'変更内容を保存しました。':'登録できました。講師番号は '+result.code+' です。今後はこの番号とパスワードでログインしてください。');
+  showProfile(result,editing?'変更内容を保存しました。':'登録できました。講師番号は '+result.code+' です。今後はこの番号とパスワードでログインしてください。',true);
+}));
+$('editAfterSave').addEventListener('click',()=>{
+  $('success').hidden=true;$('editor').hidden=false;notice('');$('editor').scrollIntoView({behavior:'smooth'});
+});
+$('closeAfterSave').addEventListener('click',()=>task(async()=>{
+  const old=token;token='';profile=null;pending=null;passwordChangeRequested=false;
+  document.querySelectorAll('form').forEach(form=>form.reset());notice('閉じています…');
+  try{await api('Logout',{token:old});}catch{}
+  window.close();setTimeout(()=>location.replace('./'),150);
 }));
 $('logout').addEventListener('click',()=>task(async()=>{
   const old=token;token='';profile=null;pending=null;$('passwordChangeForm').reset();passwordChangeRequested=false;$('editForm').reset();$('enrollForm').reset();$('loginForm').reset();
@@ -192,10 +203,10 @@ $('inviteForm').addEventListener('submit',e=>{e.preventDefault();task(async()=>{
   const f=e.target;notice('登録コードを発行しています…');
   const login=await post(STAFF_AUTH,{action:'studentQrLogin',code:f.elements.staffCode.value.trim(),password:f.elements.staffPassword.value});
   if(!login.success||!['2','3','4'].includes(String(login.permissionLevel)))throw new Error('スタッフID・パスワードと利用権限を確認してください。');
-  const result=await api('Invite',{staffLoginId:String(login.loginId||login.code||f.elements.staffCode.value.trim()),sessionToken:login.sessionToken,teacherCode:f.elements.teacherCode.value.trim()});
+  const result=await api('Invite',{staffLoginId:String(login.loginId||login.code||f.elements.staffCode.value.trim()),sessionToken:login.sessionToken});
   f.elements.staffPassword.value='';$('inviteCode').value=result.registrationCode;$('inviteResult').hidden=false;
-  $('invitePurpose').textContent=(result.teacherCode?'講師番号 '+result.teacherCode+' のパスワード設定・再設定用':'新しい講師の初期登録用')+' ／ 有効期限：'+new Date(result.expiresAt).toLocaleString('ja-JP');
-  await renderInviteQr(result.registrationCode,result.teacherCode?'setup':'new');
+  $('invitePurpose').textContent='新しい講師の初期登録用 ／ 有効期限：'+new Date(result.expiresAt).toLocaleString('ja-JP');
+  await renderInviteQr(result.registrationCode,'new');
   notice('登録コードとQRを発行しました。講師本人のスマホで読み取ってもらうか、QR画像・登録リンクを本人へ渡してください。');
 });});
 async function renderInviteQr(code,kind){
