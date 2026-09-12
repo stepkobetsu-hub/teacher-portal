@@ -131,7 +131,11 @@ function showProfile(result,success,completed=false){
   const form=$('editForm');Object.keys(labels).forEach(k=>{form.elements[k].value=k==='myNumber'?'':profile[k]||'';});
   form.elements.bankChoice.value=profile.bankCode==='9900'?'yucho':profile.bankCode?'other':'';
   bankUI('edit-',form,false);
-  $('edit-myNumberState').textContent=profile.hasMyNumber?'マイナンバー：登録済み（番号は表示しません）':'マイナンバー：未登録';
+  const myNumberInput=form.elements.myNumber;
+  myNumberInput.readOnly=profile.hasMyNumber;
+  myNumberInput.setAttribute('aria-readonly',String(profile.hasMyNumber));
+  myNumberInput.placeholder=profile.hasMyNumber?'登録済み（変更は管理者へ連絡）':'12桁のマイナンバー';
+  $('edit-myNumberState').textContent=profile.hasMyNumber?'マイナンバー：登録済みです。変更する場合は管理者に連絡してください。':'マイナンバー：未登録です。こちらから新規登録できます。';
   $('edit-legacyName').textContent=!profile.surname?'登録済みのお名前：'+profile.fullName+' ／ '+profile.fullKana+'。お名前を修正するときは姓・名を分けて入力してください。':'';
   $('enrollForm').reset();$('loginForm').reset();$('passwordChangeForm').reset();$('passwordChangePanel').open=passwordChangeRequested;
   $('successText').textContent=success;notice(completed?'':success);
@@ -139,6 +143,9 @@ function showProfile(result,success,completed=false){
 }
 $('newFields').innerHTML=fieldsHTML('new-');$('editFields').innerHTML=fieldsHTML('edit-');
 setupFields('new-',$('enrollForm'));setupFields('edit-',$('editForm'));
+$('editForm').elements.myNumber.addEventListener('focus',()=>{
+  if(profile&&profile.hasMyNumber)notice('マイナンバーの変更は、管理者に連絡してください。',true);
+});
 ['new','login'].forEach(v=>$(v+'Tab').addEventListener('click',()=>{passwordChangeRequested=false;modeChange(v);}));
 $('loginForm').addEventListener('submit',e=>{e.preventDefault();task(async()=>{
   notice('ログインしています…');const f=e.target,code=f.elements.teacherCode.value.trim();
