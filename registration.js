@@ -6,7 +6,9 @@ let mode='new',token='',profile=null,pending=null,enrollmentSalt='',busy=false;
 const labels={surname:'姓',givenName:'名',surnameKana:'フリガナ（姓）',givenNameKana:'フリガナ（名）',postalCode:'郵便番号',address:'住所',bankCode:'銀行コード',branchCode:'支店コード／ゆうちょの記号',accountType:'口座種別',accountNumber:'口座番号／ゆうちょの番号',birthDate:'生年月日',myNumber:'マイナンバー',email:'メールアドレス'};
 function notice(text,error=false){$('message').textContent=text;$('message').classList.toggle('error',error);$('message').hidden=!text;}
 async function post(url,data){
-  const response=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(data),credentials:'omit',cache:'no-store',redirect:'follow',signal:AbortSignal.timeout(45000)});
+  // A unique non-sensitive URL prevents intermediary reuse of Apps Script redirects.
+  const endpoint=new URL(url);endpoint.searchParams.set('requestId',crypto.randomUUID());
+  const response=await fetch(endpoint.href,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(data),credentials:'omit',cache:'no-store',redirect:'follow',signal:AbortSignal.timeout(45000)});
   if(!response.ok)throw new Error('通信できませんでした。入力を残しているので、少し待ってから再度お試しください。');
   let result;try{result=await response.json();}catch{throw new Error('サーバーの応答を確認できません。少し待ってから再度お試しください。');}
   return result;
