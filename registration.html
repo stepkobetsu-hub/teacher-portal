@@ -5,8 +5,10 @@
 <meta name="referrer" content="no-referrer"><meta name="robots" content="noindex,nofollow">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src https://script.google.com https://script.googleusercontent.com; img-src 'self' data:; base-uri 'none'; form-action 'none'; object-src 'none'">
 <title>講師初期登録・登録情報の変更｜個別指導STEP</title>
-<link rel="icon" href="images/favicon.png"><link rel="stylesheet" href="registration.css?v=20260912-1">
-<script src="registration.js?v=20260912-2" defer></script>
+<link rel="icon" href="images/favicon.png"><link rel="stylesheet" href="registration.css?v=20260912-qr">
+<script src="vendor/registration-qrcode.js?v=1.5.4" defer></script>
+<script src="registration-links.js?v=20260912-qr" defer></script>
+<script src="registration.js?v=20260912-qr" defer></script>
 </head>
 <body>
 <main>
@@ -56,7 +58,24 @@
     <label>対象の講師番号<input name="teacherCode" inputmode="numeric" pattern="7[0-9]{3}" maxlength="4"><small>新しい講師の登録は空欄。既存講師の設定・再設定は、その講師番号を入力してください。</small></label>
     <button type="submit">登録コードを発行する</button>
   </form>
-  <div id="inviteResult" hidden><p id="invitePurpose"></p><label>本人へ渡す登録コード<textarea id="inviteCode" readonly rows="3"></textarea></label><button id="copyInvite" type="button">コードをコピー</button></div>
+  <details class="existing-invite"><summary>発行済みのコードをQRにする</summary>
+    <form id="existingInviteForm">
+      <label>発行済みの登録コード<input name="registrationCode" required pattern="[a-f0-9]{64}" maxlength="64" autocomplete="off" autocapitalize="off" spellcheck="false"></label>
+      <label>コードの用途<select name="mode"><option value="new">新しい講師の初期登録</option><option value="setup">既存講師のパスワード設定・再設定</option></select></label>
+      <button type="submit">このコードのQRを表示する</button>
+    </form>
+  </details>
+  <div id="inviteResult" hidden>
+    <p id="invitePurpose"></p>
+    <div id="inviteQrBox" class="invite-qr" hidden>
+      <h3>講師のスマホで読み取ってください</h3>
+      <canvas id="inviteQr" role="img" aria-label="本人用の講師登録ページを開くQRコード"></canvas>
+      <p>カメラで読み取ると登録ページが開き、登録コードも自動入力されます。</p>
+      <div class="actions"><button id="saveInviteQr" type="button">QR画像を保存</button><button id="copyInviteLink" type="button">登録リンクをコピー</button></div>
+      <small>このQRは対象の講師本人へ渡してください。有効期限・使用回数は元の登録コードと同じです。</small>
+    </div>
+    <label>本人へ渡す登録コード<textarea id="inviteCode" readonly rows="3"></textarea></label><button id="copyInvite" type="button">コードをコピー</button>
+  </div>
 </details>
 <footer>口座情報・マイナンバーをこの端末に保存しません。共有端末では、利用後にログアウトしてください。</footer>
 </main>

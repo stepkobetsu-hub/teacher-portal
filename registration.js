@@ -3,6 +3,7 @@ const REG_API='https://script.google.com/macros/s/AKfycbzYpm-16ahuZ3BRFKRT-iSvR9
 const STAFF_AUTH='https://script.google.com/macros/s/AKfycbypkUc0MqZ07E7pZRglNPeRM56WbCcuWaLpRzi9bVFcPklHDxaaLC7GfzG6ozTGCbEX/exec';
 const $=id=>document.getElementById(id);
 let mode='new',token='',profile=null,pending=null,enrollmentSalt='',busy=false;
+let inviteLink='';
 const labels={surname:'姓',givenName:'名',surnameKana:'フリガナ（姓）',givenNameKana:'フリガナ（名）',postalCode:'郵便番号',address:'住所',bankCode:'銀行コード',branchCode:'支店コード／ゆうちょの記号',accountType:'口座種別',accountNumber:'口座番号／ゆうちょの番号',birthDate:'生年月日',myNumber:'マイナンバー',email:'メールアドレス'};
 function notice(text,error=false){$('message').textContent=text;$('message').classList.toggle('error',error);$('message').hidden=!text;}
 async function post(url,data){
@@ -172,9 +173,37 @@ $('inviteForm').addEventListener('submit',e=>{e.preventDefault();task(async()=>{
   const result=await api('Invite',{staffLoginId:String(login.loginId||login.code||f.elements.staffCode.value.trim()),sessionToken:login.sessionToken,teacherCode:f.elements.teacherCode.value.trim()});
   f.elements.staffPassword.value='';$('inviteCode').value=result.registrationCode;$('inviteResult').hidden=false;
   $('invitePurpose').textContent=(result.teacherCode?'講師番号 '+result.teacherCode+' のパスワード設定・再設定用':'新しい講師の初期登録用')+' ／ 有効期限：'+new Date(result.expiresAt).toLocaleString('ja-JP');
-  notice('登録コードを発行しました。対象の講師本人へ渡してください。');
+  await renderInviteQr(result.registrationCode,result.teacherCode?'setup':'new');
+  notice('登録コードとQRを発行しました。講師本人のスマホで読み取ってもらうか、QR画像・登録リンクを本人へ渡してください。');
 });});
+async function renderInviteQr(code,kind){
+  $('inviteQrBox').hidden=true;inviteLink='';
+  const link=TeacherInviteLinks.make(code,kind);
+  await TeacherRegistrationQR.toCanvas($('inviteQr'),link,{errorCorrectionLevel:'M',margin:4,width:384,color:{dark:'#000000',light:'#ffffff'}});
+  inviteLink=link;$('inviteQrBox').hidden=false;
+}
+$('existingInviteForm').addEventListener('submit',e=>{e.preventDefault();task(async()=>{
+  const code=e.target.elements.registrationCode.value.trim(),kind=e.target.elements.mode.value;
+  await renderInviteQr(code,kind);
+  $('inviteCode').value=code;$('inviteResult').hidden=false;
+  $('invitePurpose').textContent='発行済みコードのQRです。新しいコードの発行・有効期限の延長は行いません。';
+  notice('QRを表示しました。講師本人のスマホで読み取ってください。');
+  $('inviteQrBox').scrollIntoView({behavior:'smooth',block:'center'});
+});});
+$('copyInviteLink').addEventListener('click',()=>task(async()=>{
+  if(!inviteLink)return;await navigator.clipboard.writeText(inviteLink);notice('登録コード入りのリンクをコピーしました。講師本人へ送ってください。');
+}));
+$('saveInviteQr').addEventListener('click',()=>{
+  if(!inviteLink)return;
+  const link=document.createElement('a');link.download='STEP-講師登録QR.png';link.href=$('inviteQr').toDataURL('image/png');link.click();
+});
 $('copyInvite').addEventListener('click',()=>task(async()=>{await navigator.clipboard.writeText($('inviteCode').value);notice('登録コードをコピーしました。');}));
-window.addEventListener('pagehide',()=>{token='';profile=null;pending=null;document.querySelectorAll('form').forEach(f=>f.reset());$('inviteCode').value='';});
+window.addEventListener('pagehide',()=>{token='';profile=null;pending=null;inviteLink='';document.querySelectorAll('form').forEach(f=>f.reset());$('inviteCode').value='';$('inviteQr').getContext('2d').clearRect(0,0,384,384);});
 window.addEventListener('pageshow',event=>{if(event.persisted)location.reload();});
-modeChange('new');
+const receivedInvite=TeacherInviteLinks.read(location.hash);
+if(location.hash.includes('registrationCode'))history.replaceState(null,'',location.pathname+location.search);
+modeChange(receivedInvite?receivedInvite.mode:'new');
+if(receivedInvite){
+  $('enrollForm').elements.registrationCode.value=receivedInvite.code;
+  notice(receivedInvite.mode==='setup'?'登録コードを読み込みました。ご自分のパスワードを設定してください。':'登録コードを読み込みました。ご自分のパスワードと必要事項を入力してください。');
+}
