@@ -140,7 +140,7 @@ $('loginForm').addEventListener('submit',e=>{e.preventDefault();task(async()=>{
   notice('ログインしています…');const f=e.target,code=f.elements.teacherCode.value.trim();
   const metadata=await api('Salt',{teacherCode:code});
   const proof=await passwordProof(f.elements.password.value,metadata.salt);
-  const result=await api('Login',{teacherCode:code,proof});showProfile(result,'ログインしました。銀行口座などを追加入力・修正できます。');
+  const result=await api('Login',{teacherCode:code,proof,password:f.elements.password.value});showProfile(result,'ログインしました。銀行口座などを追加入力・修正できます。');
 });});
 $('enrollForm').addEventListener('submit',e=>{e.preventDefault();task(async()=>{
   const f=e.target;if(f.elements.password.value!==f.elements.passwordConfirm.value)throw new Error('確認用パスワードが一致しません。');
