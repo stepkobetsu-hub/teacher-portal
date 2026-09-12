@@ -31,10 +31,11 @@
     <div id="registrationIntro"><h2>はじめて登録する方</h2><p>姓・名、フリガナ、メールアドレスを入力してください。銀行口座などは後日追加できます。</p></div>
     <div id="setupIntro" hidden><h2>パスワード設定・再設定</h2><p>登録済みの講師の方はこちら。教室から本人用の登録コードを受け取ってください。登録済みの情報は消えません。</p></div>
     <label>教室から受け取った登録コード<input name="registrationCode" required maxlength="64" autocapitalize="off" spellcheck="false"></label>
-    <div class="two">
-      <label>パスワードを設定<input name="password" type="password" autocomplete="new-password" minlength="4" maxlength="128" required><small>4文字以上で設定してください。</small></label>
-      <label>パスワード（確認）<input name="passwordConfirm" type="password" autocomplete="new-password" minlength="4" maxlength="128" required></label>
+    <div id="enrollPasswordFields" class="two" hidden>
+      <label>パスワードを設定<input name="password" type="password" autocomplete="new-password" minlength="4" maxlength="128"><small>4文字以上で設定してください。</small></label>
+      <label>パスワード（確認）<input name="passwordConfirm" type="password" autocomplete="new-password" minlength="4" maxlength="128"></label>
     </div>
+    <p id="automaticPasswordNotice" class="hint">初期パスワードは、生年月日の月日4桁で自動設定します（例：5月6日 → 0506）。</p>
     <div id="newFields"></div>
     <label class="check"><input name="consent" type="checkbox" required>入力した情報を、講師の登録・給与振込・税務手続き・業務連絡のため教室へ提出します。</label>
     <button id="enrollButton" class="primary" type="submit">内容を確認する</button>
