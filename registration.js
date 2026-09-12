@@ -83,7 +83,7 @@ function bankUI(prefix,form,changed){
   $(prefix+'bankHint').textContent=yucho?'ゆうちょは銀行コード9900、記号・番号を保存します。口座種別は空欄になります。':'';
 }
 function modeChange(value){
-  mode=value;pending=null;enrollmentSalt='';notice('');
+  mode=value;pending=null;enrollmentSalt='';notice('');$('admin').hidden=value!=='new';
   $('review').hidden=true;$('entry').hidden=false;$('editor').hidden=true;
   $('loginForm').hidden=value!=='login';$('enrollForm').hidden=value==='login';
   $('newFields').hidden=value!=='new';$('registrationIntro').hidden=value!=='new';$('setupIntro').hidden=value!=='setup';
@@ -123,7 +123,7 @@ function review(values,kind){
 }
 function showProfile(result,success){
   if(result.token)token=result.token;
-  profile=result.profile;pending=null;enrollmentSalt='';
+  profile=result.profile;pending=null;enrollmentSalt='';$('admin').hidden=true;$('admin').open=false;$('inviteForm').reset();
   $('entry').hidden=true;$('review').hidden=true;$('editor').hidden=false;
   $('teacherCodeDisplay').textContent=profile.code;$('teacherNameDisplay').textContent=profile.fullName;
   const form=$('editForm');Object.keys(labels).forEach(k=>{form.elements[k].value=k==='myNumber'?'':profile[k]||'';});
