@@ -200,10 +200,14 @@ $('saveInviteQr').addEventListener('click',()=>{
 $('copyInvite').addEventListener('click',()=>task(async()=>{await navigator.clipboard.writeText($('inviteCode').value);notice('登録コードをコピーしました。');}));
 window.addEventListener('pagehide',()=>{token='';profile=null;pending=null;inviteLink='';document.querySelectorAll('form').forEach(f=>f.reset());$('inviteCode').value='';$('inviteQr').getContext('2d').clearRect(0,0,384,384);});
 window.addEventListener('pageshow',event=>{if(event.persisted)location.reload();});
-const receivedInvite=TeacherInviteLinks.read(location.hash);
-if(location.hash.includes('registrationCode'))history.replaceState(null,'',location.pathname+location.search);
-modeChange(receivedInvite?receivedInvite.mode:'new');
-if(receivedInvite){
+function receiveInvite(){
+  const receivedInvite=TeacherInviteLinks.read(location.hash);
+  if(location.hash.includes('registrationCode'))history.replaceState(null,'',location.pathname+location.search);
+  if(!receivedInvite)return;
+  modeChange(receivedInvite.mode);
   $('enrollForm').elements.registrationCode.value=receivedInvite.code;
   notice(receivedInvite.mode==='setup'?'登録コードを読み込みました。ご自分のパスワードを設定してください。':'登録コードを読み込みました。ご自分のパスワードと必要事項を入力してください。');
 }
+modeChange('new');
+receiveInvite();
+window.addEventListener('hashchange',receiveInvite);
