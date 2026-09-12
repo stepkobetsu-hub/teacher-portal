@@ -143,6 +143,18 @@ function showProfile(result,success,completed=false){
 }
 $('newFields').innerHTML=fieldsHTML('new-');$('editFields').innerHTML=fieldsHTML('edit-');
 setupFields('new-',$('enrollForm'));setupFields('edit-',$('editForm'));
+document.querySelectorAll('input[type="password"]').forEach(input=>{
+  const wrap=document.createElement('div');wrap.className='password-input-wrap';
+  input.parentNode.insertBefore(wrap,input);wrap.appendChild(input);
+  const button=document.createElement('button');button.type='button';button.className='password-toggle';
+  button.textContent='👁';button.setAttribute('aria-label','パスワードを表示');
+  button.addEventListener('click',()=>{
+    const showing=input.type==='text';input.type=showing?'password':'text';
+    button.textContent=showing?'👁':'🙈';
+    button.setAttribute('aria-label',showing?'パスワードを表示':'パスワードを隠す');
+  });
+  wrap.appendChild(button);
+});
 $('editForm').elements.myNumber.addEventListener('focus',()=>{
   if(profile&&profile.hasMyNumber)notice('マイナンバーの変更は、管理者に連絡してください。',true);
 });
