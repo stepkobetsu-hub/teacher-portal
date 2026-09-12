@@ -88,7 +88,7 @@ function modeChange(value){
   $('loginForm').hidden=value!=='login';$('enrollForm').hidden=value==='login';
   $('newFields').hidden=value!=='new';$('registrationIntro').hidden=value!=='new';$('setupIntro').hidden=value!=='setup';
   $('newFields').querySelectorAll('input,select').forEach(el=>{el.disabled=value!=='new';el.required=value==='new'&&['surname','givenName','surnameKana','givenNameKana','email'].includes(el.name);});
-  ['new','login','setup'].forEach(v=>$(v+'Tab').setAttribute('aria-pressed',String(value===v)));
+  ['new','login'].forEach(v=>$(v+'Tab').setAttribute('aria-pressed',String(value===v)));
 }
 function getFields(form,isNew){
   const values={};Object.keys(labels).forEach(key=>{
@@ -136,7 +136,6 @@ function showProfile(result,success){
 $('newFields').innerHTML=fieldsHTML('new-');$('editFields').innerHTML=fieldsHTML('edit-');
 setupFields('new-',$('enrollForm'));setupFields('edit-',$('editForm'));
 ['new','login'].forEach(v=>$(v+'Tab').addEventListener('click',()=>{passwordChangeRequested=false;modeChange(v);}));
-$('setupTab').addEventListener('click',()=>{passwordChangeRequested=true;modeChange('login');notice('現在の講師番号・パスワードでログインすると、登録コードなしでパスワードを変更できます。');});
 $('loginForm').addEventListener('submit',e=>{e.preventDefault();task(async()=>{
   notice('ログインしています…');const f=e.target,code=f.elements.teacherCode.value.trim();
   const metadata=await api('Salt',{teacherCode:code});
@@ -179,6 +178,15 @@ $('logout').addEventListener('click',()=>task(async()=>{
   const old=token;token='';profile=null;pending=null;$('passwordChangeForm').reset();passwordChangeRequested=false;$('editForm').reset();$('enrollForm').reset();$('loginForm').reset();
   modeChange('login');notice('ログアウトしました。');
   try{await api('Logout',{token:old});}catch{notice('この画面からログアウトしました。接続できないためサーバーのセッションは有効期限で終了します。');}
+}));
+$('closeWithoutSaving').addEventListener('click',()=>task(async()=>{
+  const old=token;token='';profile=null;pending=null;passwordChangeRequested=false;
+  document.querySelectorAll('form').forEach(form=>form.reset());
+  modeChange('login');notice('閉じています…');
+  try{await api('Logout',{token:old});}catch{}
+  window.close();
+  // Browsers may keep a manually opened tab open; return to the portal in that case.
+  setTimeout(()=>location.replace('./'),150);
 }));
 $('inviteForm').addEventListener('submit',e=>{e.preventDefault();task(async()=>{
   const f=e.target;notice('登録コードを発行しています…');

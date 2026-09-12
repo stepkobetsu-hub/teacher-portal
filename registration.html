@@ -5,10 +5,10 @@
 <meta name="referrer" content="no-referrer"><meta name="robots" content="noindex,nofollow">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src https://script.google.com https://script.googleusercontent.com; img-src 'self' data:; base-uri 'none'; form-action 'none'; object-src 'none'">
 <title>講師初期登録・登録情報の変更｜個別指導STEP</title>
-<link rel="icon" href="images/favicon.png"><link rel="stylesheet" href="registration.css?v=20260912-fields">
+<link rel="icon" href="images/favicon.png"><link rel="stylesheet" href="registration.css?v=20260912-close">
 <script src="vendor/registration-qrcode.js?v=1.5.4" defer></script>
 <script src="registration-links.js?v=20260912-qr" defer></script>
-<script src="registration.js?v=20260912-change-password" defer></script>
+<script src="registration.js?v=20260912-close" defer></script>
 </head>
 <body>
 <main>
@@ -19,7 +19,6 @@
   <div class="tabs" role="group" aria-label="手続きの選択">
     <button id="newTab" type="button" aria-pressed="true">はじめての登録</button>
     <button id="loginTab" type="button" aria-pressed="false">登録情報を変更</button>
-    <button id="setupTab" type="button" aria-pressed="false">パスワード変更</button>
   </div>
   <form id="loginForm" hidden>
     <h2>講師番号でログイン</h2>
@@ -42,7 +41,7 @@
   </form>
 </section>
 <section id="editor" hidden>
-  <div class="account"><div><small>講師番号</small><strong id="teacherCodeDisplay"></strong><span id="teacherNameDisplay"></span></div><button id="logout" type="button">ログアウト</button></div>
+  <div class="account"><div><small>講師番号</small><strong id="teacherCodeDisplay"></strong><span id="teacherNameDisplay"></span></div><div class="account-actions"><button id="logout" type="button">ログアウト</button><button id="closeWithoutSaving" type="button">登録せずに閉じる</button></div></div>
   <details id="passwordChangePanel"><summary>パスワード変更</summary>
     <p>現在のパスワードを確認して変更します。変更後は他の講師アプリでも新しいパスワードを使ってください。</p>
     <form id="passwordChangeForm" autocomplete="off">
