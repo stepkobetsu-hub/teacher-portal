@@ -3,7 +3,7 @@ const REG_API='https://script.google.com/macros/s/AKfycbzYpm-16ahuZ3BRFKRT-iSvR9
 const STAFF_AUTH='https://script.google.com/macros/s/AKfycbypkUc0MqZ07E7pZRglNPeRM56WbCcuWaLpRzi9bVFcPklHDxaaLC7GfzG6ozTGCbEX/exec';
 const $=id=>document.getElementById(id);
 let mode='new',token='',profile=null,pending=null,enrollmentSalt='',busy=false;
-let inviteLink='';
+let inviteLink='',passwordChangeRequested=false;
 const labels={surname:'姓',givenName:'名',surnameKana:'フリガナ（姓）',givenNameKana:'フリガナ（名）',postalCode:'郵便番号',address:'住所',bankCode:'銀行コード',branchCode:'支店コード／ゆうちょの記号',accountType:'口座種別',accountNumber:'口座番号／ゆうちょの番号',birthDate:'生年月日',myNumber:'マイナンバー',email:'メールアドレス'};
 function notice(text,error=false){$('message').textContent=text;$('message').classList.toggle('error',error);$('message').hidden=!text;}
 async function post(url,data){
@@ -131,11 +131,12 @@ function showProfile(result,success){
   bankUI('edit-',form,false);
   $('edit-myNumberState').textContent=profile.hasMyNumber?'マイナンバー：登録済み（番号は表示しません）':'マイナンバー：未登録';
   $('edit-legacyName').textContent=!profile.surname?'登録済みのお名前：'+profile.fullName+' ／ '+profile.fullKana+'。お名前を修正するときは姓・名を分けて入力してください。':'';
-  $('enrollForm').reset();$('loginForm').reset();notice(success);
+  $('enrollForm').reset();$('loginForm').reset();$('passwordChangeForm').reset();$('passwordChangePanel').open=passwordChangeRequested;notice(success);
 }
 $('newFields').innerHTML=fieldsHTML('new-');$('editFields').innerHTML=fieldsHTML('edit-');
 setupFields('new-',$('enrollForm'));setupFields('edit-',$('editForm'));
-['new','login','setup'].forEach(v=>$(v+'Tab').addEventListener('click',()=>modeChange(v)));
+['new','login'].forEach(v=>$(v+'Tab').addEventListener('click',()=>{passwordChangeRequested=false;modeChange(v);}));
+$('setupTab').addEventListener('click',()=>{passwordChangeRequested=true;modeChange('login');notice('現在の講師番号・パスワードでログインすると、登録コードなしでパスワードを変更できます。');});
 $('loginForm').addEventListener('submit',e=>{e.preventDefault();task(async()=>{
   notice('ログインしています…');const f=e.target,code=f.elements.teacherCode.value.trim();
   const metadata=await api('Salt',{teacherCode:code});
@@ -149,6 +150,17 @@ $('enrollForm').addEventListener('submit',e=>{e.preventDefault();task(async()=>{
   const fields=mode==='new'?getFields(f,true):{};
   pending={kind:mode,fields,registrationCode:f.elements.registrationCode.value.trim(),salt:enrollmentSalt,proof:await passwordProof(f.elements.password.value,enrollmentSalt)};
   notice('');review(fields,mode);
+});});
+$('passwordChangeForm').addEventListener('submit',e=>{e.preventDefault();task(async()=>{
+  const f=e.target;
+  if(f.elements.newPassword.value!==f.elements.newPasswordConfirm.value)throw new Error('新しいパスワードの確認入力が一致しません。');
+  if(f.elements.newPassword.value.length<4)throw new Error('新しいパスワードは4文字以上で設定してください。');
+  const metadata=await api('Salt',{teacherCode:profile.code});
+  const currentProof=await passwordProof(f.elements.currentPassword.value,metadata.salt);
+  await api('ChangePassword',{token,currentPassword:f.elements.currentPassword.value,currentProof,newPassword:f.elements.newPassword.value});
+  token='';profile=null;pending=null;passwordChangeRequested=false;
+  document.querySelectorAll('form').forEach(form=>form.reset());
+  modeChange('login');notice('パスワードを変更しました。新しいパスワードでログインしてください。他の講師アプリでも新しいパスワードを使えます。');
 });});
 $('editForm').addEventListener('submit',e=>{e.preventDefault();task(async()=>{
   const fields=getFields(e.target,false);if(!Object.keys(fields).length){notice('変更された項目はありません。');return;}
@@ -164,7 +176,7 @@ $('reviewSave').addEventListener('click',()=>task(async()=>{
   showProfile(result,editing?'変更内容を保存しました。':'登録できました。講師番号は '+result.code+' です。今後はこの番号とパスワードでログインしてください。');
 }));
 $('logout').addEventListener('click',()=>task(async()=>{
-  const old=token;token='';profile=null;pending=null;$('editForm').reset();$('enrollForm').reset();$('loginForm').reset();
+  const old=token;token='';profile=null;pending=null;$('passwordChangeForm').reset();passwordChangeRequested=false;$('editForm').reset();$('enrollForm').reset();$('loginForm').reset();
   modeChange('login');notice('ログアウトしました。');
   try{await api('Logout',{token:old});}catch{notice('この画面からログアウトしました。接続できないためサーバーのセッションは有効期限で終了します。');}
 }));

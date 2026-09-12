@@ -8,7 +8,7 @@
 <link rel="icon" href="images/favicon.png"><link rel="stylesheet" href="registration.css?v=20260912-fields">
 <script src="vendor/registration-qrcode.js?v=1.5.4" defer></script>
 <script src="registration-links.js?v=20260912-qr" defer></script>
-<script src="registration.js?v=20260912-aj" defer></script>
+<script src="registration.js?v=20260912-change-password" defer></script>
 </head>
 <body>
 <main>
@@ -19,7 +19,7 @@
   <div class="tabs" role="group" aria-label="手続きの選択">
     <button id="newTab" type="button" aria-pressed="true">はじめての登録</button>
     <button id="loginTab" type="button" aria-pressed="false">登録情報を変更</button>
-    <button id="setupTab" type="button" aria-pressed="false">パスワード設定・再設定</button>
+    <button id="setupTab" type="button" aria-pressed="false">パスワード変更</button>
   </div>
   <form id="loginForm" hidden>
     <h2>講師番号でログイン</h2>
@@ -43,6 +43,15 @@
 </section>
 <section id="editor" hidden>
   <div class="account"><div><small>講師番号</small><strong id="teacherCodeDisplay"></strong><span id="teacherNameDisplay"></span></div><button id="logout" type="button">ログアウト</button></div>
+  <details id="passwordChangePanel"><summary>パスワード変更</summary>
+    <p>現在のパスワードを確認して変更します。変更後は他の講師アプリでも新しいパスワードを使ってください。</p>
+    <form id="passwordChangeForm" autocomplete="off">
+      <label>現在のパスワード<input name="currentPassword" type="password" autocomplete="current-password" required maxlength="128"></label>
+      <label>新しいパスワード<input name="newPassword" type="password" autocomplete="new-password" minlength="4" maxlength="128" required><small>4文字以上で設定してください。</small></label>
+      <label>新しいパスワード（確認）<input name="newPasswordConfirm" type="password" autocomplete="new-password" minlength="4" maxlength="128" required></label>
+      <button type="submit" class="primary">パスワードを変更する</button>
+    </form>
+  </details>
   <h2>登録情報の確認・変更</h2><p>変更した項目だけ保存します。空欄のままの項目は、現在の登録内容を残します。</p>
   <form id="editForm" autocomplete="off"><div id="editFields"></div><button class="primary" type="submit">変更内容を確認する</button></form>
 </section>
