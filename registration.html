@@ -5,10 +5,10 @@
 <meta name="referrer" content="no-referrer"><meta name="robots" content="noindex,nofollow">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src https://script.google.com https://script.googleusercontent.com; img-src 'self' data:; base-uri 'none'; form-action 'none'; object-src 'none'">
 <title>講師初期登録・登録情報の変更｜個別指導STEP</title>
-<link rel="icon" href="images/favicon.png"><link rel="stylesheet" href="registration.css?v=20260912-close">
+<link rel="icon" href="images/favicon.png"><link rel="stylesheet" href="registration.css?v=20260913-saved">
 <script src="vendor/registration-qrcode.js?v=1.5.4" defer></script>
 <script src="registration-links.js?v=20260912-qr" defer></script>
-<script src="registration.js?v=20260912-admin-new-only" defer></script>
+<script src="registration.js?v=20260913-saved" defer></script>
 </head>
 <body>
 <main>
@@ -58,12 +58,15 @@
   <h2>入力内容の確認</h2><p>内容を確認してから保存してください。</p><dl id="reviewValues"></dl>
   <div class="actions"><button id="reviewBack" type="button">戻って修正</button><button id="reviewSave" type="button" class="primary">この内容で保存する</button></div>
 </section>
+<section id="success" hidden>
+  <h2>保存しました</h2><p id="successText"></p>
+  <div class="actions"><button id="closeAfterSave" type="button" class="primary">閉じる</button><button id="editAfterSave" type="button">編集する</button></div>
+</section>
 <details id="admin"><summary>教室スタッフ：登録コードの発行</summary>
-  <p>権限2・3・4のスタッフが、新規登録または既存講師のパスワード設定用コードを発行します。有効期限は7日間、1回のみ使用できます。</p>
+  <p>権限2・3・4のスタッフが、新しい講師の初期登録用コードを発行します。有効期限は7日間、1回のみ使用できます。</p>
   <form id="inviteForm">
     <label>スタッフID<input name="staffCode" autocomplete="username" required></label>
     <label>スタッフパスワード<input name="staffPassword" type="password" autocomplete="current-password" required></label>
-    <label>対象の講師番号<input name="teacherCode" inputmode="numeric" pattern="7[0-9]{3}" maxlength="4"><small>新しい講師の登録は空欄。既存講師の設定・再設定は、その講師番号を入力してください。</small></label>
     <button type="submit">登録コードを発行する</button>
   </form>
   <details class="existing-invite"><summary>発行済みのコードをQRにする</summary>
