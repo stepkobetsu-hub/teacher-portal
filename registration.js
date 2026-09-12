@@ -41,10 +41,10 @@ function fieldsHTML(prefix){
     input('postalCode','郵便番号',prefix,'text','postal-code','7桁。ハイフンがあっても入力できます。')+
     input('address','住所',prefix,'text','street-address')+'</fieldset>'+
     '<fieldset><legend>給与振込口座 <small>あとから入力できます</small></legend>'+
+    '<a class="lookup-button" href="https://www.bankdb.jp/" target="_blank" rel="noopener noreferrer">銀行コード・支店コードを調べる ↗</a><p class="hint">検索サイトが別のタブで開きます。銀行名から検索し、支店を選んで確認してください。</p>'+
     '<label>銀行<select name="bankChoice" id="'+prefix+'bankChoice"><option value="">選択してください</option><option value="other">ゆうちょ以外の銀行</option><option value="yucho">ゆうちょ銀行</option></select></label>'+
     '<div class="two">'+input('bankCode','銀行コード',prefix,'text','off','4桁の数字')+
     input('branchCode','支店コード',prefix,'text','off','3桁の数字')+'</div>'+
-    '<a class="lookup-button" href="https://www.bankdb.jp/" target="_blank" rel="noopener noreferrer">銀行コード・支店コードを調べる ↗</a><p class="hint">検索サイトが別のタブで開きます。銀行名から検索し、支店を選んで確認してください。</p>'+
     '<label id="'+prefix+'typeLabel">口座種別<select name="accountType"><option value="">選択してください</option><option>普通</option><option>当座</option><option>貯蓄</option></select></label>'+
     input('accountNumber','口座番号',prefix,'text','off','7桁以内。先頭の0もそのまま入力してください。')+
     '<p class="hint" id="'+prefix+'bankHint"></p></fieldset>'+
@@ -144,7 +144,7 @@ $('loginForm').addEventListener('submit',e=>{e.preventDefault();task(async()=>{
 });});
 $('enrollForm').addEventListener('submit',e=>{e.preventDefault();task(async()=>{
   const f=e.target;if(f.elements.password.value!==f.elements.passwordConfirm.value)throw new Error('確認用パスワードが一致しません。');
-  if(f.elements.password.value.length<12)throw new Error('パスワードは12文字以上で設定してください。');
+  if(f.elements.password.value.length<4)throw new Error('パスワードは4文字以上で設定してください。');
   if(!enrollmentSalt)enrollmentSalt=hex(crypto.getRandomValues(new Uint8Array(16)));
   const fields=mode==='new'?getFields(f,true):{};
   pending={kind:mode,fields,registrationCode:f.elements.registrationCode.value.trim(),salt:enrollmentSalt,proof:await passwordProof(f.elements.password.value,enrollmentSalt)};
