@@ -156,7 +156,7 @@ $('enrollForm').addEventListener('submit',e=>{e.preventDefault();task(async()=>{
     enrollmentPassword=match[1]+match[2];
   }else{
     if(enrollmentPassword!==f.elements.passwordConfirm.value)throw new Error('確認用パスワードが一致しません。。');
-    if(enrollmentPassword.length<4)throw new Error('パスワードは4文字以上で設定してください。。');
+    if(enrollmentPassword.length<4)throw new Error('パスワードは4文字以上で設定してください。');
   }
   if(!enrollmentSalt)enrollmentSalt=hex(crypto.getRandomValues(new Uint8Array(16)));
   pending={kind:mode,fields,registrationCode:f.elements.registrationCode.value.trim(),salt:enrollmentSalt,password:enrollmentPassword,proof:await passwordProof(enrollmentPassword,enrollmentSalt)};
