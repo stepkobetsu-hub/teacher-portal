@@ -5,10 +5,10 @@
 <meta name="referrer" content="no-referrer"><meta name="robots" content="noindex,nofollow">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src https://script.google.com https://script.googleusercontent.com; img-src 'self' data:; base-uri 'none'; form-action 'none'; object-src 'none'">
 <title>講師登録・変更｜個別指導STEP</title>
-<link rel="icon" href="images/favicon.png"><link rel="stylesheet" href="registration.css?v=20260913-password-eye">
+<link rel="icon" href="images/favicon.png"><link rel="stylesheet" href="registration.css?v=20260914-notification-settings">
 <script src="vendor/registration-qrcode.js?v=1.5.4" defer></script>
 <script src="registration-links.js?v=20260912-qr" defer></script>
-<script src="registration.js?v=20260913-password-eye" defer></script>
+<script src="registration.js?v=20260914-notification-settings" defer></script>
 </head>
 <body>
 <main>
@@ -70,6 +70,23 @@
     <label>スタッフパスワード<input name="staffPassword" type="password" autocomplete="current-password" required></label>
     <button type="submit">登録コードを発行する</button>
   </form>
+  <button id="notificationSettingsButton" class="settings-button" type="button">⚙ 確認メール送信先の設定</button>
+  <section id="notificationSettingsPanel" class="settings-panel" hidden>
+    <h3>講師本人以外の確認メール送信先</h3>
+    <p>講師本人のメールアドレスに加えて、ここで設定した1～3件にも登録・変更の確認メールを送信します。</p>
+    <form id="notificationSettingsLoginForm" autocomplete="off">
+      <label>スタッフID<input name="staffCode" autocomplete="username" required></label>
+      <label>スタッフパスワード<input name="staffPassword" type="password" autocomplete="current-password" required></label>
+      <button type="submit">送信先を表示する</button>
+    </form>
+    <form id="notificationSettingsForm" hidden>
+      <label>送信先1（必須）<input name="recipient1" type="email" autocomplete="off" required></label>
+      <label>送信先2（任意）<input name="recipient2" type="email" autocomplete="off"></label>
+      <label>送信先3（任意）<input name="recipient3" type="email" autocomplete="off"></label>
+      <button class="primary" type="submit">この送信先で保存する</button>
+      <button id="notificationSettingsCancel" type="button">閉じる</button>
+    </form>
+  </section>
   <details class="existing-invite"><summary>発行済みのコードをQRにする</summary>
     <form id="existingInviteForm">
       <label>発行済みの登録コード<input name="registrationCode" required pattern="[a-f0-9]{64}" maxlength="64" autocomplete="off" autocapitalize="off" spellcheck="false"></label>
