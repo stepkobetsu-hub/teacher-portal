@@ -13,3 +13,5 @@ button{font:inherit;font-weight:700;padding:12px 20px;min-height:48px;cursor:poi
 .account-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.account-actions button{white-space:nowrap}@media(max-width:580px){.account{flex-wrap:wrap}.account-actions{width:100%;justify-content:flex-start}.account-actions button{flex:1}}
 
 .password-input-wrap{position:relative}.password-input-wrap input{padding-right:58px}.password-toggle{position:absolute;right:5px;top:11px;width:44px;min-height:40px;padding:4px;border:0;background:transparent;font-size:21px;line-height:1}.password-toggle:hover{background:#edf5f2}.password-toggle:focus-visible{outline:3px solid #bbded2;outline-offset:0}
+
+.settings-button{width:100%;margin:12px 0 4px;background:#eef6ff;border-color:#8fb3df;color:#174f8f}.settings-panel{margin:12px 0 18px;padding:20px;border:1px solid #b8cee8;border-radius:12px;background:#f8fbff}.settings-panel h3{margin-top:0}.settings-panel form>button{width:100%;margin:10px 0 4px}
