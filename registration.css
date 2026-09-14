@@ -14,4 +14,4 @@ button{font:inherit;font-weight:700;padding:12px 20px;min-height:48px;cursor:poi
 
 .password-input-wrap{position:relative}.password-input-wrap input{padding-right:58px}.password-toggle{position:absolute;right:5px;top:11px;width:44px;min-height:40px;padding:4px;border:0;background:transparent;font-size:21px;line-height:1}.password-toggle:hover{background:#edf5f2}.password-toggle:focus-visible{outline:3px solid #bbded2;outline-offset:0}
 
-.settings-button{width:100%;margin:12px 0 4px;background:#eef6ff;border-color:#8fb3df;color:#174f8f}.settings-panel{margin:12px 0 18px;padding:20px;border:1px solid #b8cee8;border-radius:12px;background:#f8fbff}.settings-panel h3{margin-top:0}.settings-panel form>button{width:100%;margin:10px 0 4px}
+.settings-area{margin:-10px 4px 20px}.settings-button{width:auto;min-height:34px;padding:4px 10px;border-color:#c8d3cf;background:transparent;color:#586e68;font-size:13px;font-weight:500}.settings-button:hover{background:#edf3f1}.settings-panel{margin:10px 0 18px;padding:20px;border:1px solid #d5e0dc;border-radius:12px;background:#fafcfb}.settings-panel h3{margin-top:0}.settings-panel form>button{width:100%;margin:10px 0 4px}
