@@ -6,7 +6,7 @@ const source=fs.readFileSync(new URL('../gas/TeacherRegistration.gs',import.meta
 const rows=Array.from({length:102},()=>Array(17).fill(''));
 rows[3]=['コード','氏名','よみ','在籍','〒','住所','雇い入れ日','銀行','記号（支店）','種別','口座番号','生年月日','年齢','扶養控除申告','マイナンバー','メールアドレス',''];
 rows[94]=[7092,'既存 講師','キゾン コウシ',1,'0012345','既存住所','2020/1/1','0001','002','普通','0012345',new Date('2000-01-01T00:00:00+09:00'),'=AGE','existing-N','012345678901','existing@example.invalid','existing-qr'];
-const properties=new Map();let locked=false,failNextWrite=false;
+const properties=new Map(),sentMail=[];let locked=false,failNextWrite=false;
 const sheet={
  getSheetId:()=>2020620808,getLastRow:()=>Math.max(4,...rows.map((r,i)=>r.some(v=>v!=='')?i+1:0)),getMaxRows:()=>rows.length,
  insertRowsAfter:(n,count)=>rows.push(...Array.from({length:count},()=>Array(17).fill(''))),
@@ -26,6 +26,7 @@ const ctx=vm.createContext({
  computeHmacSha256Signature:(s,k)=>[...crypto.createHmac('sha256',k).update(s).digest()],
  formatDate:d=>new Date(d.getTime()+9*3600000).toISOString().slice(0,10)},
  SpreadsheetApp:{openById:()=>({getSheetByName:()=>sheet}),flush:()=>{}},
+ MailApp:{sendEmail:message=>sentMail.push(message)},
  LockService:{getScriptLock:()=>({tryLock:()=>{if(locked)return false;locked=true;return true;},hasLock:()=>locked,releaseLock:()=>{locked=false;}})},
  requireQrStaffSession_:body=>{if(body.sessionToken!=='staff-test')throw new Error('denied');return {loginId:'staff-test'};}
 });
@@ -37,7 +38,14 @@ const invite=code=>call('Invite',{sessionToken:'staff-test',teacherCode:code||''
 const fields={surname:'試験',givenName:'講師',surnameKana:'しけん',givenNameKana:'こうし',email:'test@example.invalid'};
 let count=0;function test(name,fn){fn();count++;console.log('PASS',name);}
 test('unauthenticated access and invite denied',()=>{
- assert.equal(call('Profile',{teacherCode:'7092'}).ok,false);assert.equal(call('Save',{teacherCode:'7092',fields:{address:'attack'}}).ok,false);assert.equal(call('Invite',{}).ok,false);
+ assert.equal(call('Profile',{teacherCode:'7092'}).ok,false);assert.equal(call('Save',{teacherCode:'7092',fields:{address:'attack'}}).ok,false);assert.equal(call('Invite',{}).ok,false);assert.equal(call('NotificationSettingsGet',{}).ok,false);assert.equal(call('NotificationSettingsSave',{recipients:['attacker@example.invalid']}).ok,false);
+});
+test('staff can read and change one to three additional confirmation recipients',()=>{
+ assert.deepEqual(call('NotificationSettingsGet',{sessionToken:'staff-test'}).recipients,['mintcocoajasmine@gmail.com','admin@educrest.jp']);
+ assert.equal(call('NotificationSettingsSave',{sessionToken:'staff-test',recipients:[]}).ok,false);
+ assert.equal(call('NotificationSettingsSave',{sessionToken:'staff-test',recipients:['bad-address']}).ok,false);
+ const saved=call('NotificationSettingsSave',{sessionToken:'staff-test',recipients:['owner1@example.invalid','OWNER2@example.invalid','owner3@example.invalid']});
+ assert.deepEqual(saved.recipients,['owner1@example.invalid','owner2@example.invalid','owner3@example.invalid']);
 });
 const registrationCode=invite(),s=salt(),p=proof('a-strong-test-password',s);
 let registered;
@@ -45,6 +53,8 @@ test('next teacher gets 7093; optional financial fields empty',()=>{
  registered=call('Enroll',{mode:'new',registrationCode,salt:s,proof:p,fields});
  assert(registered.ok,registered.message);assert.equal(registered.code,'7093');assert.equal(rows[95][0],7093);
  assert.equal(rows[95][1],'試験 講師');assert.equal(rows[95][2],'シケン コウシ');assert.equal(rows[95][3],1);assert(rows[95][6] instanceof Date);assert.equal(rows[95][14],'');assert.equal(rows[95][16],'');assert.match(rows[95][12],/L96/);
+ assert.deepEqual(sentMail.slice(-4).map(message=>message.to),['test@example.invalid','owner1@example.invalid','owner2@example.invalid','owner3@example.invalid']);
+ assert(sentMail.slice(-4).every(message=>!message.body.includes('マイナンバー等の登録内容は、安全のためメールには記載していません。')||!message.body.includes('001234567890')));
 });
 test('same enrollment replay does not duplicate; changed password cannot reuse invite',()=>{
  assert.equal(call('Enroll',{mode:'new',registrationCode,salt:s,proof:p,fields}).code,'7093');
