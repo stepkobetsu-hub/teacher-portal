@@ -342,7 +342,7 @@ function clearTeacherSession() {
 function renderNyutaikunQr(code, name, qrData) {
   document.getElementById("nyuCodeDisplay").textContent = code;
   document.getElementById("nyuNameDisplay").textContent = name || "";
-  const qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=360x360&data=" + encodeURIComponent(qrData);
+  const qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=360x360&ecc=M&data=" + encodeURIComponent(qrData);
   document.getElementById("qrDisplay").innerHTML = '<img alt="出退くんQR" loading="eager" src="' + qrUrl + '">';
 }
 
