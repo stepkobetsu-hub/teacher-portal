@@ -1,27 +1,23 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-  <defs><clipPath id="clip"><rect width="512" height="512" rx="92"/></clipPath></defs>
-  <g clip-path="url(#clip)">
-    <rect width="512" height="512" fill="#19a55a"/>
-    <rect width="512" height="158" fill="#ffffff"/>
-    <rect y="158" width="512" height="354" fill="#18a957"/>
-    <rect y="430" width="512" height="82" fill="#0f7c43"/>
-    <rect x="0" y="0" width="512" height="512" rx="92" fill="none" stroke="#12914e" stroke-width="18"/>
-    <image href="logo.jpg" x="43" y="26" width="426" height="116" preserveAspectRatio="xMidYMid meet"/>
-    <rect x="254" y="213" width="208" height="145" rx="16" fill="#118849" stroke="#ffffff" stroke-width="16"/>
-    <line x1="292" y1="255" x2="421" y2="255" stroke="#ffffff" stroke-width="12" stroke-linecap="round"/>
-    <line x1="292" y1="296" x2="398" y2="296" stroke="#ffffff" stroke-width="12" stroke-linecap="round"/>
-    <line x1="292" y1="337" x2="367" y2="337" stroke="#ffffff" stroke-width="12" stroke-linecap="round"/>
-    <circle cx="126" cy="244" r="45" fill="#ffffff"/>
-    <path d="M69 326c0-38 25-62 57-62s57 24 57 62v92H69z" fill="#ffffff"/>
-    <path d="M122 282h9l10 95-15 20-15-20z" fill="#0f7c43"/>
-    <path d="M169 300c19 17 31 35 49 49l55-58" fill="none" stroke="#ffffff" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
-    <line x1="268" y1="294" x2="307" y2="253" stroke="#ffffff" stroke-width="13" stroke-linecap="round"/>
-    <g transform="translate(188 453)">
-      <path d="M0 18l68-32 68 32-68 32z" fill="#ffffff"/>
-      <path d="M25 34v26c24 14 62 14 86 0V34L68 54z" fill="#ffffff"/>
-      <line x1="131" y1="18" x2="131" y2="57" stroke="#ffffff" stroke-width="8" stroke-linecap="round"/>
-      <circle cx="131" cy="62" r="7" fill="#ffffff"/>
-    </g>
-    <rect x="467" y="164" width="18" height="70" fill="#e31b23"/>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="STEP 講師ポータル：先生と黒板">
+  <title>STEP 講師ポータル</title>
+  <rect width="512" height="512" fill="#15803d"/>
+  <!-- STEP wordmark drawn as vectors: no fonts or external images required. -->
+  <polyline points="178,68 146,68 146,84 178,84 178,100 146,100" fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="8"/>
+  <polyline points="192,68 232,68" fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="8"/>
+  <polyline points="212,68 212,100" fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="8"/>
+  <polyline points="278,68 246,68 246,100 278,100" fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="8"/>
+  <polyline points="246,84 273,84" fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="8"/>
+  <polyline points="296,100 296,68 328,68 328,84 296,84" fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="8"/>
+  <rect x="346" y="64" width="16" height="40" fill="#e31b23"/>
+  <!-- Large, high-contrast board and pointing teacher remain legible at 32px. -->
+  <rect x="208" y="144" width="240" height="216" rx="16" fill="#ffffff"/>
+  <rect x="224" y="160" width="208" height="184" rx="4" fill="#064e3b"/>
+  <polyline points="268,200 388,200" fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="16"/>
+  <polyline points="332,248 388,248" fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="16"/>
+  <rect x="192" y="360" width="272" height="16" rx="8" fill="#ffffff"/>
+  <circle cx="128" cy="208" r="40" fill="#ffffff"/>
+  <rect x="80" y="268" width="96" height="144" rx="24" fill="#ffffff"/>
+  <polyline points="160,284 216,320 284,252" fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="28"/>
+  <polyline points="280,256 316,220" fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="12"/>
+  <polygon points="120,280 136,280 140,356 128,372 116,356" fill="#064e3b"/>
 </svg>
