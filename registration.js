@@ -120,6 +120,7 @@ function getFields(form,isNew){
   return values;
 }
 function review(values,kind){
+  $('reviewSave').textContent=kind==='new'?'この内容で送信する':'この内容で保存する';
   $('reviewValues').replaceChildren();
   for(const [key,value] of Object.entries(values)){
     if(!value&&kind==='new')continue;
