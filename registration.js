@@ -105,6 +105,7 @@ function modeChange(value){
 function getFields(form,isNew){
   const values={};Object.keys(labels).forEach(key=>{
     if(!form.elements[key])return;
+    if(!isNew&&['surname','givenName','surnameKana','givenNameKana'].includes(key)&&$('edit-nameParts').hidden)return;
     const value=form.elements[key].value.normalize('NFKC').trim();
     if(isNew||value!=='')values[key]=value;
   });
