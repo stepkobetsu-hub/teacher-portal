@@ -96,7 +96,7 @@ function taApproveRequest_(body,staff){
   item.sheet.getRange(request.row,9,1,2).setValues([['承認済み',result.code]]);
   trRemove_('PENDING_EMAIL_'+trHash_(fields.email.toLowerCase()));
   const subject='【個別指導STEP】講師登録が完了しました';
-  const base=fields.surname+' '+fields.givenName+' 先生の登録を承認しました。\n講師番号：'+result.code+'\n初期パスワードは生年月日の月日4桁です。';
+  const base=fields.surname+' '+fields.givenName+' 先生\n\n講師登録を承認しました。\n\n講師番号（講師ID）：'+result.code+'\n\nこの講師番号が、今後の講師ポータルへのログインに使う講師IDになります。\n\n初期パスワードは、生年月日の「月日」を数字4桁にしたものです。\n例：5月6日生まれの場合 → 0506\n';
   let notificationWarning='';
   try{
     trAuditSendOne_([fields.email],subject,base+'\n住所・口座情報は「登録情報を変更」から追加できます。');
