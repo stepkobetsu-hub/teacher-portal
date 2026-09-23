@@ -35,7 +35,10 @@ function fieldsHTML(prefix,initial=false){
     input('surname','姓',prefix,'text','family-name')+input('givenName','名',prefix,'text','given-name')+
     input('surnameKana','フリガナ（姓）',prefix)+input('givenNameKana','フリガナ（名）',prefix)+'</div>'+
     input('birthDate','生年月日',prefix,'date','bday')+input('email','メールアドレス',prefix,'email','email')+'</fieldset>';
-  return '<fieldset><legend>お名前・連絡先</legend><div class="two">'+
+  return '<fieldset><legend>お名前・連絡先</legend>'+
+    '<div class="two" id="'+prefix+'registeredNames" hidden><label>登録済みのお名前<input name="registeredFullName" type="text" readonly></label><label>登録済みのフリガナ<input name="registeredFullKana" type="text" readonly></label></div>'+
+    '<button type="button" id="'+prefix+'changeName" hidden>お名前・フリガナを変更する</button>'+
+    '<div class="two" id="'+prefix+'nameParts">'+
     input('surname','姓',prefix,'text','family-name')+input('givenName','名',prefix,'text','given-name')+
     input('surnameKana','フリガナ（姓）',prefix)+input('givenNameKana','フリガナ（名）',prefix)+'</div>'+
     input('birthDate','生年月日',prefix,'date','bday')+
@@ -139,6 +142,12 @@ function showProfile(result,success,completed=false){
   $('entry').hidden=true;$('review').hidden=true;$('success').hidden=!completed;$('editor').hidden=completed;
   $('teacherCodeDisplay').textContent=profile.code;$('teacherNameDisplay').textContent=profile.fullName;
   const form=$('editForm');Object.keys(labels).forEach(k=>{form.elements[k].value=k==='myNumber'?'':profile[k]||'';});
+  const legacyName=!profile.surname||!profile.givenName||!profile.surnameKana||!profile.givenNameKana;
+  $('edit-registeredNames').hidden=!legacyName;
+  $('edit-changeName').hidden=!legacyName;
+  $('edit-nameParts').hidden=legacyName;
+  form.elements.registeredFullName.value=profile.fullName||[profile.surname,profile.givenName].filter(Boolean).join('');
+  form.elements.registeredFullKana.value=profile.fullKana||[profile.surnameKana,profile.givenNameKana].filter(Boolean).join('');
   form.elements.bankChoice.value=profile.bankCode==='9900'?'yucho':profile.bankCode?'other':'';
   bankUI('edit-',form,false);
   const myNumberInput=form.elements.myNumber;
@@ -146,7 +155,7 @@ function showProfile(result,success,completed=false){
   myNumberInput.setAttribute('aria-readonly',String(profile.hasMyNumber));
   myNumberInput.placeholder=profile.hasMyNumber?'登録済み（変更は管理者へ連絡）':'12桁のマイナンバー';
   $('edit-myNumberState').textContent=profile.hasMyNumber?'マイナンバー：登録済みです。変更する場合は管理者に連絡してください。':'マイナンバー：未登録です。こちらから新規登録できます。';
-  $('edit-legacyName').textContent=!profile.surname?'登録済みのお名前：'+profile.fullName+' ／ '+profile.fullKana+'。お名前を修正するときは姓・名を分けて入力してください。':'';
+  $('edit-legacyName').textContent=legacyName?'お名前を変更する場合は、姓と名、フリガナもそれぞれ分けて入力してください。':'';
   $('enrollForm').reset();$('loginForm').reset();$('passwordChangeForm').reset();$('passwordChangePanel').open=passwordChangeRequested;
   $('successText').textContent=success;notice(completed?'':success);
   $('successHeading').textContent='保存しました';$('editAfterSave').hidden=false;
@@ -154,6 +163,11 @@ function showProfile(result,success,completed=false){
 }
 $('newFields').innerHTML=fieldsHTML('new-',true);$('editFields').innerHTML=fieldsHTML('edit-');
 setupFields('new-',$('enrollForm'));setupFields('edit-',$('editForm'));
+$('edit-changeName').addEventListener('click',()=>{
+  $('edit-nameParts').hidden=false;
+  $('edit-changeName').hidden=true;
+  $('edit-surnameLabel').querySelector('input').focus();
+});
 document.querySelectorAll('input[type="password"]').forEach(input=>{
   const wrap=document.createElement('div');wrap.className='password-input-wrap';
   input.parentNode.insertBefore(wrap,input);wrap.appendChild(input);
