@@ -3,7 +3,7 @@ const REG_API='https://script.google.com/macros/s/AKfycbzYpm-16ahuZ3BRFKRT-iSvR9
 const STAFF_AUTH='https://script.google.com/macros/s/AKfycbypkUc0MqZ07E7pZRglNPeRM56WbCcuWaLpRzi9bVFcPklHDxaaLC7GfzG6ozTGCbEX/exec';
 const $=id=>document.getElementById(id);
 let mode='new',token='',profile=null,pending=null,enrollmentSalt='',busy=false;
-let passwordChangeRequested=false,notificationStaffSession=null;
+let passwordChangeRequested=false,notificationStaffSession=null,approvalToken='',approvalStaffSession=null;
 const labels={surname:'姓',givenName:'名',surnameKana:'フリガナ（姓）',givenNameKana:'フリガナ（名）',postalCode:'郵便番号',address:'住所',bankCode:'銀行コード',branchCode:'支店コード／ゆうちょの記号',accountType:'口座種別',accountNumber:'口座番号／ゆうちょの番号',birthDate:'生年月日',myNumber:'マイナンバー',email:'メールアドレス'};
 function notice(text,error=false){$('message').textContent=text;$('message').classList.toggle('error',error);$('message').hidden=!text;}
 async function post(url,data){
@@ -89,6 +89,7 @@ function bankUI(prefix,form,changed){
 }
 function modeChange(value){
   mode=value;pending=null;enrollmentSalt='';notice('');$('notificationSettingsArea').hidden=value!=='new';
+  $('approval').hidden=true;
   $('review').hidden=true;$('success').hidden=true;$('entry').hidden=false;$('editor').hidden=true;
   $('loginForm').hidden=value!=='login';$('enrollForm').hidden=value==='login';
   $('newFields').hidden=value!=='new';$('registrationIntro').hidden=value!=='new';$('setupIntro').hidden=value!=='setup';
@@ -146,6 +147,7 @@ function showProfile(result,success,completed=false){
   $('edit-legacyName').textContent=!profile.surname?'登録済みのお名前：'+profile.fullName+' ／ '+profile.fullKana+'。お名前を修正するときは姓・名を分けて入力してください。':'';
   $('enrollForm').reset();$('loginForm').reset();$('passwordChangeForm').reset();$('passwordChangePanel').open=passwordChangeRequested;
   $('successText').textContent=success;notice(completed?'':success);
+  $('successHeading').textContent='保存しました';$('editAfterSave').hidden=false;
   if(completed)$('success').scrollIntoView({behavior:'smooth',block:'center'});
 }
 $('newFields').innerHTML=fieldsHTML('new-',true);$('editFields').innerHTML=fieldsHTML('edit-');
@@ -209,8 +211,14 @@ $('reviewBack').addEventListener('click',()=>{
 $('reviewSave').addEventListener('click',()=>task(async()=>{
   if(!pending)return;notice('保存しています。画面を閉じずにお待ちください…');
   const editing=pending.kind==='edit';
+  if(pending.kind==='new'){
+    const result=await api('SubmitRequest',{fields:pending.fields,salt:pending.salt,proof:pending.proof});
+    pending=null;enrollmentSalt='';$('enrollForm').reset();$('entry').hidden=true;$('review').hidden=true;$('success').hidden=false;
+    $('successHeading').textContent='申請を受け付けました';$('successText').textContent='管理者へ確認メールを送りました。承認後に講師マスターへ登録し、講師番号をメールでお知らせします。'+(result.notificationWarning?'\n'+result.notificationWarning:'');
+    $('editAfterSave').hidden=true;notice('');$('success').scrollIntoView({behavior:'smooth',block:'center'});return;
+  }
   const result=editing?await api('Save',{token,fields:pending.fields,revision:pending.revision}):await api('Enroll',{mode:pending.kind,fields:pending.fields,registrationCode:pending.registrationCode,salt:pending.salt,password:pending.password,proof:pending.proof});
-  const completedMessage=editing?'変更内容を保存しました。':'登録できました。講師番号は '+result.code+' です。住所・口座などは「登録情報を変更」から追加できます。初期パスワードは生年月日の月日4桁です。';
+  const completedMessage=editing?'変更内容を保存しました。':'講師番号 '+result.code+' のパスワードを設定しました。';
   showProfile(result,completedMessage+(result.notificationWarning?'\n'+result.notificationWarning:''),true);
 }));
 $('editAfterSave').addEventListener('click',()=>{
@@ -259,9 +267,39 @@ $('notificationSettingsForm').addEventListener('submit',e=>{e.preventDefault();t
 $('notificationSettingsCancel').addEventListener('click',()=>{
   notificationStaffSession=null;$('notificationSettingsForm').reset();$('notificationSettingsForm').hidden=true;$('notificationSettingsLoginForm').reset();$('notificationSettingsLoginForm').hidden=false;$('notificationSettingsPanel').hidden=true;notice('');
 });
-window.addEventListener('pagehide',()=>{token='';profile=null;pending=null;notificationStaffSession=null;document.querySelectorAll('form').forEach(f=>f.reset());});
+function showApproval(details){
+  $('approvalValues').replaceChildren();
+  const fields=details.applicant||{};
+  for(const [label,value] of [['お名前',fields.surname+' '+fields.givenName],['フリガナ',fields.surnameKana+' '+fields.givenNameKana],['生年月日',fields.birthDate],['メールアドレス',fields.email]]){
+    const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=value;$('approvalValues').append(dt,dd);
+  }
+  $('approvalStatus').textContent=details.status==='承認済み'?'承認済みです。講師番号：'+details.code:'内容を確認し、登録してよい場合だけ承認してください。';
+  $('approveRequest').hidden=details.status!=='確認待ち';$('approvalDetail').hidden=false;
+}
+$('approvalLoginForm').addEventListener('submit',e=>{e.preventDefault();task(async()=>{
+  const f=e.target;notice('申請を確認しています…');
+  const login=await post(STAFF_AUTH,{action:'studentQrLogin',code:f.elements.staffCode.value.trim(),password:f.elements.staffPassword.value});
+  if(!login.success||!['2','3','4'].includes(String(login.permissionLevel)))throw new Error('スタッフID・パスワードと利用権限を確認してください。');
+  approvalStaffSession={staffLoginId:String(login.loginId||login.code||f.elements.staffCode.value.trim()),sessionToken:login.sessionToken};
+  const details=await api('ApprovalPreview',{...approvalStaffSession,approvalToken});
+  f.elements.staffPassword.value='';f.hidden=true;showApproval(details);notice('');
+});});
+$('approveRequest').addEventListener('click',()=>task(async()=>{
+  if(!approvalStaffSession)throw new Error('スタッフ認証をやり直してください。');
+  notice('講師マスターへ登録しています。画面を閉じずにお待ちください…');
+  const result=await api('ApproveRequest',{...approvalStaffSession,approvalToken});
+  $('approvalStatus').textContent='承認しました。講師番号：'+result.code+'。D列は自動で1になりました。'+(result.notificationWarning?' '+result.notificationWarning:'');
+  $('approveRequest').hidden=true;notice('登録が完了しました。');
+}));
+window.addEventListener('pagehide',()=>{token='';profile=null;pending=null;notificationStaffSession=null;approvalStaffSession=null;approvalToken='';document.querySelectorAll('form').forEach(f=>f.reset());});
 window.addEventListener('pageshow',event=>{if(event.persisted)location.reload();});
 function receiveInvite(){
+  const approval=location.hash.match(/^#approval=([a-f0-9]{64})$/);
+  if(approval){
+    approvalToken=approval[1];history.replaceState(null,'',location.pathname+location.search);
+    $('entry').hidden=true;$('editor').hidden=true;$('review').hidden=true;$('success').hidden=true;$('notificationSettingsArea').hidden=true;$('approval').hidden=false;
+    return;
+  }
   const receivedInvite=TeacherInviteLinks.read(location.hash);
   if(location.hash.includes('registrationCode'))history.replaceState(null,'',location.pathname+location.search);
   if(!receivedInvite)return;
