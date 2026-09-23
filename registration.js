@@ -3,7 +3,7 @@ const REG_API='https://script.google.com/macros/s/AKfycbzYpm-16ahuZ3BRFKRT-iSvR9
 const STAFF_AUTH='https://script.google.com/macros/s/AKfycbypkUc0MqZ07E7pZRglNPeRM56WbCcuWaLpRzi9bVFcPklHDxaaLC7GfzG6ozTGCbEX/exec';
 const $=id=>document.getElementById(id);
 let mode='new',token='',profile=null,pending=null,enrollmentSalt='',busy=false;
-let inviteLink='',passwordChangeRequested=false,notificationStaffSession=null;
+let passwordChangeRequested=false,notificationStaffSession=null;
 const labels={surname:'姓',givenName:'名',surnameKana:'フリガナ（姓）',givenNameKana:'フリガナ（名）',postalCode:'郵便番号',address:'住所',bankCode:'銀行コード',branchCode:'支店コード／ゆうちょの記号',accountType:'口座種別',accountNumber:'口座番号／ゆうちょの番号',birthDate:'生年月日',myNumber:'マイナンバー',email:'メールアドレス'};
 function notice(text,error=false){$('message').textContent=text;$('message').classList.toggle('error',error);$('message').hidden=!text;}
 async function post(url,data){
@@ -30,7 +30,11 @@ async function passwordProof(password,salt){
   const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(password),'PBKDF2',false,['deriveBits']);
   return hex(await crypto.subtle.deriveBits({name:'PBKDF2',salt:bytes,iterations:600000,hash:'SHA-256'},key,256));
 }
-function fieldsHTML(prefix){
+function fieldsHTML(prefix,initial=false){
+  if(initial)return '<fieldset><legend>はじめての登録</legend><div class="two">'+
+    input('surname','姓',prefix,'text','family-name')+input('givenName','名',prefix,'text','given-name')+
+    input('surnameKana','フリガナ（姓）',prefix)+input('givenNameKana','フリガナ（名）',prefix)+'</div>'+
+    input('birthDate','生年月日',prefix,'date','bday')+input('email','メールアドレス',prefix,'email','email')+'</fieldset>';
   return '<fieldset><legend>お名前・連絡先</legend><div class="two">'+
     input('surname','姓',prefix,'text','family-name')+input('givenName','名',prefix,'text','given-name')+
     input('surnameKana','フリガナ（姓）',prefix)+input('givenNameKana','フリガナ（名）',prefix)+'</div>'+
@@ -57,6 +61,7 @@ function input(name,label,prefix,type='text',autocomplete='off',hint=''){
   return '<label id="'+prefix+name+'Label"><span>'+label+'</span><input name="'+name+'" type="'+type+'" autocomplete="'+autocomplete+'"'+(digits?' inputmode="numeric"':'')+' maxlength="'+(name==='address'?300:name==='myNumber'?16:100)+'"><small>'+hint+'</small></label>';
 }
 function setupFields(prefix,form){
+  if(!form.elements.bankChoice)return;
   form.querySelector('[name=bankChoice]').addEventListener('change',()=>bankUI(prefix,form,true));
   form.querySelector('[name=bankCode]').addEventListener('input',()=>{
     const value=form.elements.bankCode.value.normalize('NFKC').trim();
@@ -83,17 +88,19 @@ function bankUI(prefix,form,changed){
   $(prefix+'bankHint').textContent=yucho?'ゆうちょは銀行コード9900、記号・番号を保存します。口座種別は空欄になります。':'';
 }
 function modeChange(value){
-  mode=value;pending=null;enrollmentSalt='';notice('');$('admin').hidden=value!=='new';$('notificationSettingsArea').hidden=value!=='new';
+  mode=value;pending=null;enrollmentSalt='';notice('');$('notificationSettingsArea').hidden=value!=='new';
   $('review').hidden=true;$('success').hidden=true;$('entry').hidden=false;$('editor').hidden=true;
   $('loginForm').hidden=value!=='login';$('enrollForm').hidden=value==='login';
   $('newFields').hidden=value!=='new';$('registrationIntro').hidden=value!=='new';$('setupIntro').hidden=value!=='setup';
   $('enrollPasswordFields').hidden=value==='new';$('automaticPasswordNotice').hidden=value!=='new';
+  $('registrationCodeLabel').hidden=value!=='setup';$('enrollForm').elements.registrationCode.required=value==='setup';
   $('enrollForm').elements.password.required=value==='setup';$('enrollForm').elements.passwordConfirm.required=value==='setup';
   $('newFields').querySelectorAll('input,select').forEach(el=>{el.disabled=value!=='new';el.required=value==='new'&&['surname','givenName','surnameKana','givenNameKana','birthDate','email'].includes(el.name);});
   ['new','login'].forEach(v=>$(v+'Tab').setAttribute('aria-pressed',String(value===v)));
 }
 function getFields(form,isNew){
   const values={};Object.keys(labels).forEach(key=>{
+    if(!form.elements[key])return;
     const value=form.elements[key].value.normalize('NFKC').trim();
     if(isNew||value!=='')values[key]=value;
   });
@@ -125,7 +132,7 @@ function review(values,kind){
 }
 function showProfile(result,success,completed=false){
   if(result.token)token=result.token;
-  profile=result.profile;pending=null;enrollmentSalt='';$('admin').hidden=true;$('notificationSettingsArea').hidden=true;$('admin').open=false;$('inviteForm').reset();
+  profile=result.profile;pending=null;enrollmentSalt='';$('notificationSettingsArea').hidden=true;
   $('entry').hidden=true;$('review').hidden=true;$('success').hidden=!completed;$('editor').hidden=completed;
   $('teacherCodeDisplay').textContent=profile.code;$('teacherNameDisplay').textContent=profile.fullName;
   const form=$('editForm');Object.keys(labels).forEach(k=>{form.elements[k].value=k==='myNumber'?'':profile[k]||'';});
@@ -141,7 +148,7 @@ function showProfile(result,success,completed=false){
   $('successText').textContent=success;notice(completed?'':success);
   if(completed)$('success').scrollIntoView({behavior:'smooth',block:'center'});
 }
-$('newFields').innerHTML=fieldsHTML('new-');$('editFields').innerHTML=fieldsHTML('edit-');
+$('newFields').innerHTML=fieldsHTML('new-',true);$('editFields').innerHTML=fieldsHTML('edit-');
 setupFields('new-',$('enrollForm'));setupFields('edit-',$('editForm'));
 document.querySelectorAll('input[type="password"]').forEach(input=>{
   const wrap=document.createElement('div');wrap.className='password-input-wrap';
@@ -178,7 +185,7 @@ $('enrollForm').addEventListener('submit',e=>{e.preventDefault();task(async()=>{
     if(enrollmentPassword.length<4)throw new Error('パスワードは4文字以上で設定してください。');
   }
   if(!enrollmentSalt)enrollmentSalt=hex(crypto.getRandomValues(new Uint8Array(16)));
-  pending={kind:mode,fields,registrationCode:f.elements.registrationCode.value.trim(),salt:enrollmentSalt,password:enrollmentPassword,proof:await passwordProof(enrollmentPassword,enrollmentSalt)};
+  pending={kind:mode,fields,registrationCode:mode==='setup'?f.elements.registrationCode.value.trim():'',salt:enrollmentSalt,password:enrollmentPassword,proof:await passwordProof(enrollmentPassword,enrollmentSalt)};
   notice('');review(fields,mode);
 });});
 $('passwordChangeForm').addEventListener('submit',e=>{e.preventDefault();task(async()=>{
@@ -203,7 +210,7 @@ $('reviewSave').addEventListener('click',()=>task(async()=>{
   if(!pending)return;notice('保存しています。画面を閉じずにお待ちください…');
   const editing=pending.kind==='edit';
   const result=editing?await api('Save',{token,fields:pending.fields,revision:pending.revision}):await api('Enroll',{mode:pending.kind,fields:pending.fields,registrationCode:pending.registrationCode,salt:pending.salt,password:pending.password,proof:pending.proof});
-  const completedMessage=editing?'変更内容を保存しました。':'登録できました。講師番号は '+result.code+' です。今後はこの番号とパスワードでログインしてください。';
+  const completedMessage=editing?'変更内容を保存しました。':'登録できました。講師番号は '+result.code+' です。住所・口座などは「登録情報を変更」から追加できます。初期パスワードは生年月日の月日4桁です。';
   showProfile(result,completedMessage+(result.notificationWarning?'\n'+result.notificationWarning:''),true);
 }));
 $('editAfterSave').addEventListener('click',()=>{
@@ -229,16 +236,6 @@ $('closeWithoutSaving').addEventListener('click',()=>task(async()=>{
   // Browsers may keep a manually opened tab open; return to the portal in that case.
   setTimeout(()=>location.replace('./'),150);
 }));
-$('inviteForm').addEventListener('submit',e=>{e.preventDefault();task(async()=>{
-  const f=e.target;notice('登録コードを発行しています…');
-  const login=await post(STAFF_AUTH,{action:'studentQrLogin',code:f.elements.staffCode.value.trim(),password:f.elements.staffPassword.value});
-  if(!login.success||!['2','3','4'].includes(String(login.permissionLevel)))throw new Error('スタッフID・パスワードと利用権限を確認してください。');
-  const result=await api('Invite',{staffLoginId:String(login.loginId||login.code||f.elements.staffCode.value.trim()),sessionToken:login.sessionToken});
-  f.elements.staffPassword.value='';$('inviteCode').value=result.registrationCode;$('inviteResult').hidden=false;
-  $('invitePurpose').textContent='新しい講師の初期登録用 ／ 有効期限：'+new Date(result.expiresAt).toLocaleString('ja-JP');
-  await renderInviteQr(result.registrationCode,'new');
-  notice('登録コードとQRを発行しました。講師本人のスマホで読み取ってもらうか、QR画像・登録リンクを本人へ渡してください。');
-});});
 $('notificationSettingsButton').addEventListener('click',()=>{
   const panel=$('notificationSettingsPanel');panel.hidden=!panel.hidden;
   if(!panel.hidden)$('notificationSettingsLoginForm').elements.staffCode.focus();
@@ -262,37 +259,16 @@ $('notificationSettingsForm').addEventListener('submit',e=>{e.preventDefault();t
 $('notificationSettingsCancel').addEventListener('click',()=>{
   notificationStaffSession=null;$('notificationSettingsForm').reset();$('notificationSettingsForm').hidden=true;$('notificationSettingsLoginForm').reset();$('notificationSettingsLoginForm').hidden=false;$('notificationSettingsPanel').hidden=true;notice('');
 });
-async function renderInviteQr(code,kind){
-  $('inviteQrBox').hidden=true;inviteLink='';
-  const link=TeacherInviteLinks.make(code,kind);
-  await TeacherRegistrationQR.toCanvas($('inviteQr'),link,{errorCorrectionLevel:'M',margin:4,width:384,color:{dark:'#000000',light:'#ffffff'}});
-  inviteLink=link;$('inviteQrBox').hidden=false;
-}
-$('existingInviteForm').addEventListener('submit',e=>{e.preventDefault();task(async()=>{
-  const code=e.target.elements.registrationCode.value.trim(),kind=e.target.elements.mode.value;
-  await renderInviteQr(code,kind);
-  $('inviteCode').value=code;$('inviteResult').hidden=false;
-  $('invitePurpose').textContent='発行済みコードのQRです。新しいコードの発行・有効期限の延長は行いません。';
-  notice('QRを表示しました。講師本人のスマホで読み取ってください。');
-  $('inviteQrBox').scrollIntoView({behavior:'smooth',block:'center'});
-});});
-$('copyInviteLink').addEventListener('click',()=>task(async()=>{
-  if(!inviteLink)return;await navigator.clipboard.writeText(inviteLink);notice('登録コード入りのリンクをコピーしました。講師本人へ送ってください。');
-}));
-$('saveInviteQr').addEventListener('click',()=>{
-  if(!inviteLink)return;
-  const link=document.createElement('a');link.download='STEP-講師登録QR.png';link.href=$('inviteQr').toDataURL('image/png');link.click();
-});
-$('copyInvite').addEventListener('click',()=>task(async()=>{await navigator.clipboard.writeText($('inviteCode').value);notice('登録コードをコピーしました。');}));
-window.addEventListener('pagehide',()=>{token='';profile=null;pending=null;inviteLink='';notificationStaffSession=null;document.querySelectorAll('form').forEach(f=>f.reset());$('inviteCode').value='';$('inviteQr').getContext('2d').clearRect(0,0,384,384);});
+window.addEventListener('pagehide',()=>{token='';profile=null;pending=null;notificationStaffSession=null;document.querySelectorAll('form').forEach(f=>f.reset());});
 window.addEventListener('pageshow',event=>{if(event.persisted)location.reload();});
 function receiveInvite(){
   const receivedInvite=TeacherInviteLinks.read(location.hash);
   if(location.hash.includes('registrationCode'))history.replaceState(null,'',location.pathname+location.search);
   if(!receivedInvite)return;
-  modeChange(receivedInvite.mode);
+  if(receivedInvite.mode!=='setup')return;
+  modeChange('setup');
   $('enrollForm').elements.registrationCode.value=receivedInvite.code;
-  notice(receivedInvite.mode==='setup'?'登録コードを読み込みました。ご自分のパスワードを設定してください。':'登録コードを読み込みました。必要事項を入力してください。初期パスワードは生年月日の月日4桁で自動設定されます。');
+  notice('登録コードを読み込みました。ご自分のパスワードを設定してください。');
 }
 modeChange('new');
 receiveInvite();
