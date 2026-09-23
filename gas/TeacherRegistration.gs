@@ -6,7 +6,7 @@
  * Private profile fields: only the existing teacher master, never logs/properties.
  */
 const TR_PREFIX_ = 'TR_V1_';
-const TR_BUILD_ = 'teacher-registration-20260914-notification-settings';
+const TR_BUILD_ = 'teacher-registration-20260924-simple-enrollment';
 const TR_SHEET_ID_ = '1L5aFDXAmfUDkBg8d7X3WqJgMhdMq5tM5sfUZ2G-M58E';
 const TR_TAB_ID_ = 2020620808;
 const TR_DEFAULT_NOTIFICATION_RECIPIENTS_ = ['mintcocoajasmine@gmail.com','admin@educrest.jp'];
@@ -46,8 +46,10 @@ function trSendConfirmation_(profile,kind){
   const recipients=[String(profile.email).trim()].concat(trNotificationRecipients_()).filter(function(email,index,all){return email&&all.indexOf(email)===index;});
   const action=kind==='new'?'初期登録':kind==='setup'?'パスワード設定・再設定':kind==='password'?'パスワード変更':'登録情報の変更';
   const subject='【個別指導STEP】講師'+action+'の確認';
-  const body=String(profile.fullName||'講師')+' 先生\n\n講師'+action+'を受け付けました。\n講師番号：'+String(profile.code||'')+'\n\n※銀行口座・マイナンバー等の登録内容は、安全のためメールには記載していません。\n個別指導STEP';
-  try{recipients.forEach(function(to){MailApp.sendEmail({to:to,subject:subject,body:body,name:'個別指導STEP'});});return '';}
+  const base=String(profile.fullName||'講師')+' 先生\n\n講師'+action+'を受け付けました。\n講師番号：'+String(profile.code||'');
+  const adminNote=kind==='new'?'\n\n管理者の方へ：給与明細2026-6- の「講師マスター」D列に1を入力して、在籍者にしてください。\nB列・C列・L列・P列は登録済みです。Q列（QRコード）とAJ列（初期パスワード）は自動作成されています。必要に応じてQ列・AJ列は直接上書きできます。':'';
+  const footer='\n\n※銀行口座・マイナンバー等の登録内容は、安全のためメールには記載していません。\n個別指導STEP';
+  try{recipients.forEach(function(to){MailApp.sendEmail({to:to,subject:subject,body:base+(to===String(profile.email).trim()?'':adminNote)+footer,name:'個別指導STEP'});});return '';}
   catch(e){return '登録内容は保存しましたが、確認メールの一部を送信できませんでした。教室へお知らせください。';}
 }
 function trEqual_(a,b){a=String(a||'');b=String(b||'');let diff=a.length^b.length;for(let i=0;i<Math.max(a.length,b.length);i++)diff|=(a.charCodeAt(i)||0)^(b.charCodeAt(i)||0);return diff===0;}
@@ -160,7 +162,7 @@ function trProfile_(sheet,row){
 }
 function trApply_(row,fields,rowNumber,isNew,code){
   const r=row.slice();
-  if(isNew){r[0]=Number(code);r[3]=1;r[6]=new Date();}
+  if(isNew){r[0]=Number(code);}
   if('surname' in fields)r[1]=fields.surname+' '+fields.givenName;
   if('surnameKana' in fields)r[2]=fields.surnameKana+' '+fields.givenNameKana;
   const mapping={postalCode:4,address:5,bankCode:7,branchCode:8,accountType:9,accountNumber:10,birthDate:11,myNumber:14,email:15};
@@ -176,6 +178,16 @@ function trWriteRow_(sheet,row,values){
   sheet.getRange(row,1,1,16).setValues([values]);
   SpreadsheetApp.flush();
 }
+function trInitializeAccess_(sheet,row,code,birthDate){
+  // Fill only empty cells: later manual overrides in Q/AJ must survive retries.
+  const qr=sheet.getRange(row,17),password=sheet.getRange(row,36);
+  if(qr.isBlank())qr.setValue('STEP-'+code);
+  if(password.isBlank()){
+    password.setNumberFormat('@');
+    const date=Utilities.formatDate(birthDate,'Asia/Tokyo','MMdd');
+    password.setValue("'"+date);
+  }
+}
 function trInvite_(body,staff){
   const code=body.teacherCode?trCode_(body.teacherCode):'';
   if(code)trFind_(trSheet_(),code);
@@ -185,10 +197,20 @@ function trInvite_(body,staff){
 }
 function trEnroll_(body){
   const invite=String(body.registrationCode||'').trim(),salt=String(body.salt||''),proof=String(body.proof||'');
-  if(!/^[a-f0-9]{64}$/.test(invite))trError_('教室から案内された登録コードを入力してください。');
   if(!/^[a-f0-9]{32}$/.test(salt)||!/^[a-f0-9]{64}$/.test(proof))trError_('パスワードを設定し直してください。');
-  const key='INVITE_'+trHash_(invite),record=trRead_(key);
-  if(!record||record.expires<Date.now())trError_('登録コードが無効、または期限切れです。教室へお問い合わせください。');
+  const publicNew=body.mode==='new'&&!invite;
+  if(!publicNew&&!/^[a-f0-9]{64}$/.test(invite))trError_('教室から案内された登録コードを入力してください。');
+  const publicFields=publicNew?trFields_(body.fields,true,null):null;
+  if(publicNew&&Object.keys(publicFields).sort().join(',')!==['surname','givenName','surnameKana','givenNameKana','birthDate','email'].sort().join(','))trError_('初回登録はお名前・フリガナ・生年月日・メールアドレスだけ入力してください。');
+  const key='INVITE_'+trHash_(publicNew?'public:'+publicFields.email.toLowerCase():invite);
+  let record=trRead_(key);
+  if(publicNew&&!record){
+    const sheet=trSheet_(),email=publicFields.email.toLowerCase();
+    const existing=sheet.getRange(5,16,Math.max(1,sheet.getLastRow()-4),1).getDisplayValues();
+    if(existing.some(r=>String(r[0]).trim().toLowerCase()===email))trError_('このメールアドレスは登録済みです。教室にお問い合わせください。');
+    record={code:'',expires:Date.now()+7*24*60*60*1000};trWrite_(key,record);
+  }
+  if(!record||record.expires<Date.now())trError_('登録情報を確認できません。教室へお問い合わせください。');
   if(!record.used&&!record.pending&&((body.mode==='new'&&record.code)||(body.mode!=='new'&&!record.code)))trError_('登録コードの用途が異なります。新規登録／パスワード設定・再設定の選択を確認してください。');
   const sheet=trSheet_();
   // A retry is only accepted with the exact original credential, never as a reset.
@@ -198,13 +220,14 @@ function trEnroll_(body){
     return {ok:true,code:record.code,token:trNewSession_(record.code),profile:trProfile_(sheet,trFind_(sheet,record.code)),replayed:true};
   }
   let code=record.code,row;
-  const fields=(!code||record.pending)?trFields_(body.fields,true,null):null;
+  const fields=(!code||record.pending)?(publicFields||trFields_(body.fields,true,null)):null;
   if(record.pending){
     if(!trEqual_(record.salt,salt)||!trEqual_(record.verifier,trVerifier_(proof,salt))||!trEqual_(record.fieldsHash,trHash_(JSON.stringify(fields))))trError_('途中の登録内容と一致しません。同じ内容で再送してください。');
     row=record.row;
     const existing=sheet.getRange(row,1,1,17).getValues()[0];
     if(existing.every(v=>v===''))trWriteRow_(sheet,row,trApply_(Array(16).fill(''),fields,row,true,code));
     else if(String(existing[0])!==code||existing[1]!==fields.surname+' '+fields.givenName||existing[15]!==fields.email)trError_('登録先が変更されました。教室へお問い合わせください。');
+    if(body.mode==='new')trInitializeAccess_(sheet,row,code,fields.birthDate);
   }
   else if(code){row=trFind_(sheet,code);}
   else{
@@ -227,6 +250,7 @@ function trEnroll_(body){
     trProps_().setProperty(TR_PREFIX_+'SEQUENCE',code);
     trWrite_(key,record);
     trWriteRow_(sheet,row,values);
+    if(body.mode==='new')trInitializeAccess_(sheet,row,code,fields.birthDate);
   }
   const old=trRead_('ACCOUNT_'+code);
   trWrite_('ACCOUNT_'+code,{salt:salt,verifier:trVerifier_(proof,salt),version:(old?old.version:0)+1});
@@ -289,7 +313,7 @@ function handleTeacherRegistration_(body){
   let lock;
   try{
     const action=String(body.action||'');
-    if(action==='teacherRegistrationHealth')return {ok:true,build:TR_BUILD_,authentication:'teacher-code-password',registration:'single-use-code'};
+    if(action==='teacherRegistrationHealth')return {ok:true,build:TR_BUILD_,authentication:'teacher-code-password',registration:'four-field-public'};
     let staff;
     if(['teacherRegistrationInvite','teacherRegistrationNotificationSettingsGet','teacherRegistrationNotificationSettingsSave'].includes(action))staff=requireQrStaffSession_(body);
     lock=LockService.getScriptLock();
