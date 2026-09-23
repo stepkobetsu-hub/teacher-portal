@@ -22,14 +22,14 @@ const book={getSheetByName:name=>name==='講師マスター'?master:requests,ins
 const hash=text=>crypto.createHash('sha256').update(text).digest('hex');
 const ctx=vm.createContext({Date,Math,Object,Array,String,RegExp,Error,
  TR_SHEET_ID_:'master',SpreadsheetApp:{openById:()=>book,flush(){}},
- Utilities:{formatDate:date=>date.toISOString().slice(0,10)},
+ Utilities:{formatDate:(date,zone,pattern)=>date.toISOString().slice(0,10).replace(/-/g,pattern==='yyyy/MM/dd'?'/':'-')},
  trFields_:raw=>({...raw,birthDate:new Date(raw.birthDate+'T00:00:00Z')}),
  trError_:message=>{throw new Error(message)},trRate_:()=>{},trHash_:hash,
  trRead_:key=>properties.get(key),trWrite_:(key,value)=>properties.set(key,value),trRemove_:key=>properties.delete(key),
  trSheet_:()=>master,trRandom_:()=>crypto.randomBytes(32).toString('hex'),
  trAuditRecipients_:()=>['owner@example.invalid'],trAuditSendOne_:(to,subject,body)=>sent.push({to,subject,body}),
  trEnrollCore_:body=>{
-  assert.equal(body.mode,'new');assert.equal(body.fields.email,'teacher@example.invalid');
+  assert.equal(body.mode,'new');assert.equal(body.fields.email,'teacher@example.invalid');assert.equal(body.fields.birthDate,'2001-02-03');
   masterRows[5][0]=7093;masterRows[5][1]=body.fields.surname+' '+body.fields.givenName;
   masterRows[5][3]=1;masterRows[5][15]=body.fields.email;masterRows[5][16]='STEP-7093';
   return {code:'7093',token:'abc'};
@@ -40,14 +40,16 @@ const fields={surname:'試験',givenName:'講師',surnameKana:'シケン',givenN
 const request=ctx.taSubmitRequest_({fields,salt:'a'.repeat(32),proof:'b'.repeat(64)});
 assert(request.pending);assert.equal(masterRows[5][0],'');
 const token=sent[0].body.match(/#approval=([a-f0-9]{64})/)[1];
+assert(sent[0].body.includes('生年月日：2001/02/03'));
+requests.rows[1][6]=new Date('2001-02-03T00:00:00Z'); // Google Sheets can read date-looking cells as Date objects.
 assert.throws(()=>ctx.taApprovalPreview_({approvalToken:token},{permissionLevel:'3'}));
 assert.throws(()=>ctx.taApproveRequest_({approvalToken:token},{permissionLevel:'3'}));
 assert.equal(masterRows[5][0],'');
 const preview=ctx.taApprovalPreview_({approvalToken:token},{permissionLevel:'2'});
-assert.equal(preview.status,'確認待ち');assert.equal(preview.applicant.birthDate,'2001-02-03');
+assert.equal(preview.status,'確認待ち');assert.equal(preview.applicant.birthDate,'2001/02/03');
 const approved=ctx.taApproveRequest_({approvalToken:token},{permissionLevel:'2'});
 assert.equal(approved.code,'7093');assert.equal(masterRows[5][3],1);
 assert.equal(masterRows[5][16],'STEP-7093');assert.equal(masterRows[5][35],'0203');
 assert.equal(ctx.taApproveRequest_({approvalToken:token},{permissionLevel:'2'}).replayed,true);
-assert.equal(sent.length,3);assert(!sent[0].body.includes('2001-02-03'));
+assert.equal(sent.length,3);
 console.log('Approval staging, authorization, D/Q/AJ population and replay passed.');
