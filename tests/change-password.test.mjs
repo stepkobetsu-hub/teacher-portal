@@ -46,7 +46,7 @@ let registered;
 test('next teacher gets 7093; optional financial fields empty',()=>{
  registered=call('Enroll',{mode:'new',registrationCode,salt:s,proof:p,fields});
  assert(registered.ok,registered.message);assert.equal(registered.code,'7093');assert.equal(rows[95][0],7093);
- assert.equal(rows[95][1],'試験 講師');assert.equal(rows[95][2],'シケン コウシ');assert.equal(rows[95][3],'');assert.equal(rows[95][6],'');assert.equal(rows[95][14],'');assert.equal(rows[95][16],'STEP-7093');assert.equal(rows[95][35],'0203');assert.match(rows[95][12],/L96/);
+ assert.equal(rows[95][1],'試験 講師');assert.equal(rows[95][2],'シケン コウシ');assert.equal(rows[95][3],1);assert.equal(rows[95][6],'');assert.equal(rows[95][14],'');assert.equal(rows[95][16],'STEP-7093');assert.equal(rows[95][35],'0203');assert.match(rows[95][12],/L96/);
 });
 test('same enrollment replay does not duplicate; changed password cannot reuse invite',()=>{
  assert.equal(call('Enroll',{mode:'new',registrationCode,salt:s,proof:p,fields}).code,'7093');
