@@ -15,6 +15,8 @@ const sheet={
   getDisplayValues:()=>Array.from({length:height},(_,i)=>rows[row-1+i].slice(col-1,col-1+width).map(String)),
   getFormulas:()=>Array.from({length:height},(_,i)=>rows[row-1+i].slice(col-1,col-1+width).map(v=>typeof v==='string'&&v.startsWith('=')?v:'')),
   setNumberFormat:()=>{},
+  isBlank:()=>rows[row-1][col-1]==null||rows[row-1][col-1]==='',
+  setValue(value){rows[row-1][col-1]=(col===36&&typeof value==='string'&&value.startsWith("'"))?value.slice(1):value;},
   setValues(values){assert(locked);if(failNextWrite){failNextWrite=false;throw new Error('injected write failure');}values.forEach((r,i)=>r.forEach((v,j)=>rows[row-1+i][col-1+j]=(col+j===36&&typeof v==='string'&&v.startsWith("'"))?v.slice(1):v));}
  };}
 };
@@ -24,7 +26,7 @@ const ctx=vm.createContext({
  Utilities:{getUuid:()=>crypto.randomUUID(),DigestAlgorithm:{SHA_256:'sha256'},Charset:{UTF_8:'utf8'},
  computeDigest:(algo,s)=>[...crypto.createHash(algo).update(s).digest()],
  computeHmacSha256Signature:(s,k)=>[...crypto.createHmac('sha256',k).update(s).digest()],
- formatDate:d=>new Date(d.getTime()+9*3600000).toISOString().slice(0,10)},
+ formatDate:(d,tz,format)=>{const date=new Date(d.getTime()+9*3600000).toISOString();return format==='MMdd'?date.slice(5,7)+date.slice(8,10):date.slice(0,10);}},
  SpreadsheetApp:{openById:()=>({getSheetByName:()=>sheet}),flush:()=>{}},
  LockService:{getScriptLock:()=>({tryLock:()=>{if(locked)return false;locked=true;return true;},hasLock:()=>locked,releaseLock:()=>{locked=false;}})},
  requireQrStaffSession_:body=>{if(body.sessionToken!=='staff-test')throw new Error('denied');return {loginId:'staff-test'};}
@@ -34,17 +36,17 @@ const call=(action,data={})=>JSON.parse(JSON.stringify(ctx.handleTeacherRegistra
 const salt=()=>crypto.randomBytes(16).toString('hex');
 const proof=(pass,s)=>crypto.pbkdf2Sync(pass,Buffer.from(s,'hex'),600000,32,'sha256').toString('hex');
 const invite=code=>call('Invite',{sessionToken:'staff-test',teacherCode:code||''}).registrationCode;
-const fields={surname:'試験',givenName:'講師',surnameKana:'しけん',givenNameKana:'こうし',email:'test@example.invalid'};
+const fields={surname:'試験',givenName:'講師',surnameKana:'しけん',givenNameKana:'こうし',birthDate:'2001-02-03',email:'test@example.invalid'};
 let count=0;function test(name,fn){fn();count++;console.log('PASS',name);}
 test('unauthenticated access and invite denied',()=>{
  assert.equal(call('Profile',{teacherCode:'7092'}).ok,false);assert.equal(call('Save',{teacherCode:'7092',fields:{address:'attack'}}).ok,false);assert.equal(call('Invite',{}).ok,false);
 });
-const registrationCode=invite(),s=salt(),p=proof('a-strong-test-password',s);
+const registrationCode=invite(),s=salt(),p=proof('0203',s);
 let registered;
 test('next teacher gets 7093; optional financial fields empty',()=>{
  registered=call('Enroll',{mode:'new',registrationCode,salt:s,proof:p,fields});
  assert(registered.ok,registered.message);assert.equal(registered.code,'7093');assert.equal(rows[95][0],7093);
- assert.equal(rows[95][1],'試験 講師');assert.equal(rows[95][2],'シケン コウシ');assert.equal(rows[95][3],1);assert(rows[95][6] instanceof Date);assert.equal(rows[95][14],'');assert.equal(rows[95][16],'');assert.match(rows[95][12],/L96/);
+ assert.equal(rows[95][1],'試験 講師');assert.equal(rows[95][2],'シケン コウシ');assert.equal(rows[95][3],'');assert.equal(rows[95][6],'');assert.equal(rows[95][14],'');assert.equal(rows[95][16],'STEP-7093');assert.equal(rows[95][35],'0203');assert.match(rows[95][12],/L96/);
 });
 test('same enrollment replay does not duplicate; changed password cannot reuse invite',()=>{
  assert.equal(call('Enroll',{mode:'new',registrationCode,salt:s,proof:p,fields}).code,'7093');
@@ -53,7 +55,7 @@ test('same enrollment replay does not duplicate; changed password cannot reuse i
 });
 test('wrong password fails; code plus password logs into own row',()=>{
  assert.equal(call('Login',{teacherCode:'7093',proof:'0'.repeat(64)}).ok,false);
- registered=call('Login',{teacherCode:'7093',proof:p});assert(registered.ok);
+ registered=call('Login',{teacherCode:'7093',proof:p,password:'0203'});assert(registered.ok);
  assert.equal(registered.profile.code,'7093');
 });
 test('add bank later; zeros preserved; immutable and unrelated fields preserved',()=>{
