@@ -99,7 +99,7 @@ function taApproveRequest_(body,staff){
   const base=fields.surname+' '+fields.givenName+' 先生\n\n講師登録を承認しました。\n\n講師番号（講師ID）：'+result.code+'\n\nこの講師番号が、今後の講師ポータルへのログインに使う講師IDになります。\n\n初期パスワードは、生年月日の「月日」を数字4桁にしたものです。\n例：5月6日生まれの場合 → 0506\n';
   let notificationWarning='';
   try{
-    trAuditSendOne_([fields.email],subject,base+'\n住所・口座情報の追加・変更はこちらから行えます。\nhttps://stepkobetsu-hub.github.io/teacher-portal/registration.html');
+    trAuditSendOne_([fields.email],subject,base+'\n住所・口座情報・マイナンバーの追加・変更はこちらから行えます。\nhttps://stepkobetsu-hub.github.io/teacher-portal/registration.html');
     trAuditSendOne_(trAuditRecipients_(),subject,base+'\n講師マスターD列には在籍者を示す1を自動入力しました。Q列・AJ列は後から上書きできます。');
   }catch(e){notificationWarning='登録は完了しましたが、確認メールの一部を送信できませんでした。';}
   return {ok:true,code:result.code,notificationWarning:notificationWarning};
