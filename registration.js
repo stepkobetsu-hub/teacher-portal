@@ -279,7 +279,7 @@ function showApproval(details){
 $('approvalLoginForm').addEventListener('submit',e=>{e.preventDefault();task(async()=>{
   const f=e.target;notice('申請を確認しています…');
   const login=await post(STAFF_AUTH,{action:'studentQrLogin',code:f.elements.staffCode.value.trim(),password:f.elements.staffPassword.value});
-  if(!login.success||!['2','3','4'].includes(String(login.permissionLevel)))throw new Error('スタッフID・パスワードと利用権限を確認してください。');
+  if(!login.success||String(login.permissionLevel)!=='2')throw new Error('管理者権限のスタッフID・パスワードでログインしてください。');
   approvalStaffSession={staffLoginId:String(login.loginId||login.code||f.elements.staffCode.value.trim()),sessionToken:login.sessionToken};
   const details=await api('ApprovalPreview',{...approvalStaffSession,approvalToken});
   f.elements.staffPassword.value='';f.hidden=true;showApproval(details);notice('');
