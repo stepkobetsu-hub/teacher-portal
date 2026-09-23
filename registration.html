@@ -7,7 +7,7 @@
 <title>講師登録・変更｜個別指導STEP</title>
 <link rel="icon" type="image/png" sizes="32x32" href="images/favicon.png?v=20260917-teacher-green"><link rel="stylesheet" href="registration.css?v=20260924-approval">
 <script src="registration-links.js?v=20260912-qr" defer></script>
-<script src="registration.js?v=20260924-send-review" defer></script>
+<script src="registration.js?v=20260924-login-hint" defer></script>
 </head>
 <body>
 <main>
@@ -23,6 +23,7 @@
     <h2>講師番号でログイン</h2>
     <label>講師番号<input name="teacherCode" autocomplete="username" inputmode="numeric" pattern="7[0-9]{3}" maxlength="4" required></label>
     <label>パスワード<input name="password" type="password" autocomplete="current-password" required maxlength="128"></label>
+    <p class="hint">承認後の初期パスワードは、生年月日の月日4桁です（例：5月6日 → 0506）。</p>
     <button class="primary" type="submit">ログインして編集する</button>
     <p class="hint">既存の講師は、他の講師アプリと同じ講師番号・パスワードでログインできます。パスワードが分からない場合は教室へお問い合わせください。</p>
   </form>
@@ -34,7 +35,6 @@
       <label>パスワードを設定<input name="password" type="password" autocomplete="new-password" minlength="4" maxlength="128"><small>4文字以上で設定してください。</small></label>
       <label>パスワード（確認）<input name="passwordConfirm" type="password" autocomplete="new-password" minlength="4" maxlength="128"></label>
     </div>
-    <p id="automaticPasswordNotice" class="hint">承認後の初期パスワードは、生年月日の月日4桁です（例：5月6日 → 0506）。</p>
     <div id="newFields"></div>
     <button id="enrollButton" class="primary" type="submit">内容を確認する</button>
   </form>
