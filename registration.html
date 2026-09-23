@@ -5,10 +5,9 @@
 <meta name="referrer" content="no-referrer"><meta name="robots" content="noindex,nofollow">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src https://script.google.com https://script.googleusercontent.com; img-src 'self' data:; base-uri 'none'; form-action 'none'; object-src 'none'">
 <title>講師登録・変更｜個別指導STEP</title>
-<link rel="icon" type="image/png" sizes="32x32" href="images/favicon.png?v=20260917-teacher-green"><link rel="stylesheet" href="registration.css?v=20260914-notification-settings-layout">
-<script src="vendor/registration-qrcode.js?v=1.5.4" defer></script>
+<link rel="icon" type="image/png" sizes="32x32" href="images/favicon.png?v=20260917-teacher-green"><link rel="stylesheet" href="registration.css?v=20260924-approval">
 <script src="registration-links.js?v=20260912-qr" defer></script>
-<script src="registration.js?v=20260914-notification-settings-layout" defer></script>
+<script src="registration.js?v=20260924-approval" defer></script>
 </head>
 <body>
 <main>
@@ -28,18 +27,31 @@
     <p class="hint">既存の講師は、他の講師アプリと同じ講師番号・パスワードでログインできます。パスワードが分からない場合は教室へお問い合わせください。</p>
   </form>
   <form id="enrollForm" autocomplete="off">
-    <div id="registrationIntro"><h2>はじめて登録する方</h2><p>姓・名、フリガナ、メールアドレスを入力してください。銀行口座などは後日追加できます。</p></div>
+    <div id="registrationIntro"><h2>はじめて登録する方</h2><p>お名前、フリガナ、生年月日、メールアドレスを送信します。管理者の承認後に講師番号が発行されます。住所・給与振込口座・マイナンバーはその後に追加できます。</p></div>
     <div id="setupIntro" hidden><h2>パスワード設定・再設定</h2><p>登録済みの講師の方はこちら。教室から本人用の登録コードを受け取ってください。登録済みの情報は消えません。</p></div>
-    <label>教室から受け取った登録コード<input name="registrationCode" required maxlength="64" autocapitalize="off" spellcheck="false"></label>
+    <label id="registrationCodeLabel" hidden>教室から受け取った登録コード<input name="registrationCode" maxlength="64" autocapitalize="off" spellcheck="false"></label>
     <div id="enrollPasswordFields" class="two" hidden>
       <label>パスワードを設定<input name="password" type="password" autocomplete="new-password" minlength="4" maxlength="128"><small>4文字以上で設定してください。</small></label>
       <label>パスワード（確認）<input name="passwordConfirm" type="password" autocomplete="new-password" minlength="4" maxlength="128"></label>
     </div>
-    <p id="automaticPasswordNotice" class="hint">初期パスワードは、生年月日の月日4桁で自動設定します（例：5月6日 → 0506）。</p>
+    <p id="automaticPasswordNotice" class="hint">承認後の初期パスワードは、生年月日の月日4桁です（例：5月6日 → 0506）。</p>
     <div id="newFields"></div>
     <label class="check"><input name="consent" type="checkbox" required>入力した情報を、講師の登録・給与振込・税務手続き・業務連絡のため教室へ提出します。</label>
     <button id="enrollButton" class="primary" type="submit">内容を確認する</button>
   </form>
+</section>
+<section id="approval" hidden>
+  <h2>講師登録申請の承認</h2>
+  <p>管理者メールのリンクから開いた申請です。スタッフID・パスワードでログインし、内容を確認してください。</p>
+  <form id="approvalLoginForm" autocomplete="off">
+    <label>スタッフID<input name="staffCode" autocomplete="username" required></label>
+    <label>スタッフパスワード<input name="staffPassword" type="password" autocomplete="current-password" required></label>
+    <button class="primary" type="submit">申請内容を確認する</button>
+  </form>
+  <div id="approvalDetail" hidden>
+    <p id="approvalStatus"></p><dl id="approvalValues"></dl>
+    <button id="approveRequest" class="primary" type="button">この講師を承認して登録する</button>
+  </div>
 </section>
 <section id="editor" hidden>
   <div class="account"><div><small>講師番号</small><strong id="teacherCodeDisplay"></strong><span id="teacherNameDisplay"></span></div><div class="account-actions"><button id="logout" type="button">ログアウト</button><button id="closeWithoutSaving" type="button">登録せずに閉じる</button></div></div>
@@ -52,7 +64,7 @@
       <button type="submit" class="primary">パスワードを変更する</button>
     </form>
   </details>
-  <h2>登録情報の確認・変更</h2><p>変更した項目だけ保存します。空欄のままの項目は、現在の登録内容を残します。</p>
+  <h2>登録情報の追加・変更</h2><p>住所・給与振込口座・マイナンバーもこちらから登録できます。変更した項目だけ保存し、空欄の項目は現在の登録内容を残します。</p>
   <form id="editForm" autocomplete="off"><div id="editFields"></div><button class="primary" type="submit">変更内容を確認する</button></form>
 </section>
 <section id="review" hidden>
@@ -60,35 +72,9 @@
   <div class="actions"><button id="reviewBack" type="button">戻って修正</button><button id="reviewSave" type="button" class="primary">この内容で保存する</button></div>
 </section>
 <section id="success" hidden>
-  <h2>保存しました</h2><p id="successText"></p>
+  <h2 id="successHeading">保存しました</h2><p id="successText"></p>
   <div class="actions"><button id="closeAfterSave" type="button" class="primary">閉じる</button><button id="editAfterSave" type="button">編集する</button></div>
 </section>
-<details id="admin"><summary>教室スタッフ：登録コードの発行</summary>
-  <p>権限2・3・4のスタッフが、新しい講師の初期登録用コードを発行します。有効期限は7日間、1回のみ使用できます。</p>
-  <form id="inviteForm">
-    <label>スタッフID<input name="staffCode" autocomplete="username" required></label>
-    <label>スタッフパスワード<input name="staffPassword" type="password" autocomplete="current-password" required></label>
-    <button type="submit">登録コードを発行する</button>
-  </form>
-  <details class="existing-invite"><summary>発行済みのコードをQRにする</summary>
-    <form id="existingInviteForm">
-      <label>発行済みの登録コード<input name="registrationCode" required pattern="[a-f0-9]{64}" maxlength="64" autocomplete="off" autocapitalize="off" spellcheck="false"></label>
-      <label>コードの用途<select name="mode"><option value="new">新しい講師の初期登録</option><option value="setup">既存講師のパスワード設定・再設定</option></select></label>
-      <button type="submit">このコードのQRを表示する</button>
-    </form>
-  </details>
-  <div id="inviteResult" hidden>
-    <p id="invitePurpose"></p>
-    <div id="inviteQrBox" class="invite-qr" hidden>
-      <h3>講師のスマホで読み取ってください</h3>
-      <canvas id="inviteQr" role="img" aria-label="本人用の講師登録ページを開くQRコード"></canvas>
-      <p>カメラで読み取ると登録ページが開き、登録コードも自動入力されます。</p>
-      <div class="actions"><button id="saveInviteQr" type="button">QR画像を保存</button><button id="copyInviteLink" type="button">登録リンクをコピー</button></div>
-      <small>このQRは対象の講師本人へ渡してください。有効期限・使用回数は元の登録コードと同じです。</small>
-    </div>
-    <label>本人へ渡す登録コード<textarea id="inviteCode" readonly rows="3"></textarea></label><button id="copyInvite" type="button">コードをコピー</button>
-  </div>
-</details>
 <div id="notificationSettingsArea" class="settings-area">
   <button id="notificationSettingsButton" class="settings-button" type="button">確認メール送信先の設定</button>
   <section id="notificationSettingsPanel" class="settings-panel" hidden>
