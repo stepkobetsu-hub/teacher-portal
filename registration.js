@@ -93,7 +93,7 @@ function modeChange(value){
   $('review').hidden=true;$('success').hidden=true;$('entry').hidden=false;$('editor').hidden=true;
   $('loginForm').hidden=value!=='login';$('enrollForm').hidden=value==='login';
   $('newFields').hidden=value!=='new';$('registrationIntro').hidden=value!=='new';$('setupIntro').hidden=value!=='setup';
-  $('enrollPasswordFields').hidden=value==='new';$('automaticPasswordNotice').hidden=value!=='new';
+  $('enrollPasswordFields').hidden=value==='new';
   $('registrationCodeLabel').hidden=value!=='setup';$('enrollForm').elements.registrationCode.required=value==='setup';
   $('enrollForm').elements.password.required=value==='setup';$('enrollForm').elements.passwordConfirm.required=value==='setup';
   $('newFields').querySelectorAll('input,select').forEach(el=>{el.disabled=value!=='new';el.required=value==='new'&&['surname','givenName','surnameKana','givenNameKana','birthDate','email'].includes(el.name);});
