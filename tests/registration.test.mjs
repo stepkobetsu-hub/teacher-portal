@@ -20,6 +20,17 @@ const sheet={
   setValues(values){assert(locked);if(failNextWrite){failNextWrite=false;throw new Error('injected write failure');}values.forEach((r,i)=>r.forEach((v,j)=>rows[row-1+i][col-1+j]=v));}
  };}
 };
+let requestSheet=null;
+function makeRequestSheet(){
+ const entries=[];return {
+  hideSheet:()=>{},getLastRow:()=>entries.length,
+  getRange(row,col,height=1,width=1){return {
+   getDisplayValue:()=>String(entries[row-1]?.[col-1]||''),
+   getValues:()=>Array.from({length:height},(_,i)=>entries[row-1+i].slice(col-1,col-1+width)),
+   setValues(values){values.forEach((v,i)=>{entries[row-1+i]??=Array(10).fill('');v.forEach((x,j)=>entries[row-1+i][col-1+j]=x);});}
+  };}
+ };
+}
 const ctx=vm.createContext({
  Date,JSON,Object,Array,String,Number,Math,RegExp,Error,
  PropertiesService:{getScriptProperties:()=>({getProperty:k=>properties.get(k)||null,setProperty:(k,v)=>properties.set(k,v),deleteProperty:k=>properties.delete(k),getProperties:()=>Object.fromEntries(properties)})},
@@ -27,7 +38,7 @@ const ctx=vm.createContext({
  computeDigest:(algo,s)=>[...crypto.createHash(algo).update(s).digest()],
  computeHmacSha256Signature:(s,k)=>[...crypto.createHmac('sha256',k).update(s).digest()],
  formatDate:(d,tz,format)=>{const date=new Date(d.getTime()+9*3600000).toISOString();return format==='MMdd'?date.slice(5,7)+date.slice(8,10):date.slice(0,10);}},
- SpreadsheetApp:{openById:()=>({getSheetByName:()=>sheet}),flush:()=>{}},
+ SpreadsheetApp:{openById:()=>({getSheetByName:name=>name==='講師マスター'?sheet:requestSheet,insertSheet:()=>requestSheet=makeRequestSheet()}),flush:()=>{}},
  MailApp:{sendEmail:message=>sentMail.push(message)},
  LockService:{getScriptLock:()=>({tryLock:()=>{if(locked)return false;locked=true;return true;},hasLock:()=>locked,releaseLock:()=>{locked=false;}})},
  requireQrStaffSession_:body=>{if(body.sessionToken!=='staff-test')throw new Error('denied');return {loginId:'staff-test'};}
@@ -51,19 +62,32 @@ test('staff can read and change one to three additional confirmation recipients'
 });
 const registrationCode='',s=salt(),p=proof('0203',s);
 let registered;
-test('next teacher gets 7093; optional financial fields empty',()=>{
- registered=call('Enroll',{mode:'new',registrationCode,salt:s,proof:p,fields});
+let approvalToken;
+test('submission is pending until authenticated staff approval',()=>{
+ const submitted=call('SubmitRequest',{fields,salt:s,proof:p});assert(submitted.ok,submitted.message);
+ assert.equal(rows.filter(r=>r[0]===7093).length,0);
+ assert.equal(call('ApprovalPreview',{approvalToken:'0'.repeat(64)}).ok,false);
+ assert.equal(call('ApproveRequest',{approvalToken:'0'.repeat(64)}).ok,false);
+ const mail=sentMail.find(m=>m.subject.includes('初回登録申請'));
+ approvalToken=mail.body.match(/#approval=([a-f0-9]{64})/)[1];
+ const preview=call('ApprovalPreview',{sessionToken:'staff-test',approvalToken});
+ assert(preview.ok,preview.message);assert.equal(preview.applicant.email,fields.email);
+ assert.equal(call('SubmitRequest',{fields,salt:s,proof:p}).replayed,true);
+ assert.equal(rows.filter(r=>r[0]===7093).length,0);
+});
+test('approval creates 7093, sets D=1 and sends confirmation',()=>{
+ registered=call('ApproveRequest',{sessionToken:'staff-test',approvalToken});
  assert(registered.ok,registered.message);assert.equal(registered.code,'7093');assert.equal(rows[95][0],7093);
- assert.equal(rows[95][1],'試験 講師');assert.equal(rows[95][2],'シケン コウシ');assert.equal(rows[95][3],'');assert.equal(rows[95][6],'');assert.equal(rows[95][14],'');assert.equal(rows[95][16],'STEP-7093');assert.equal(rows[95][35],"'0203");assert.match(rows[95][12],/L96/);
- assert(sentMail.slice(-4).some(message=>message.body.includes('D列に1を入力')));
- assert(!sentMail.find(message=>message.to==='test@example.invalid').body.includes('D列に1を入力'));
+ assert.equal(rows[95][1],'試験 講師');assert.equal(rows[95][2],'シケン コウシ');assert.equal(rows[95][3],1);assert.equal(rows[95][6],'');assert.equal(rows[95][14],'');assert.equal(rows[95][16],'STEP-7093');assert.equal(rows[95][35],"'0203");assert.match(rows[95][12],/L96/);
+ assert(sentMail.slice(-4).some(message=>message.body.includes('D列には在籍者を示す1を自動入力')));
+ assert(!sentMail.find(message=>message.to==='test@example.invalid').body.includes('D列には在籍者を示す1を自動入力'));
  assert.deepEqual(sentMail.slice(-4).map(message=>message.to),['test@example.invalid','owner1@example.invalid','owner2@example.invalid','owner3@example.invalid']);
  assert(sentMail.slice(-4).every(message=>!message.body.includes('マイナンバー等の登録内容は、安全のためメールには記載していません。')||!message.body.includes('001234567890')));
 });
-test('same enrollment replay does not duplicate; changed password cannot reuse invite',()=>{
- assert.equal(call('Enroll',{mode:'new',registrationCode,salt:s,proof:p,fields}).code,'7093');
+test('approval replay does not duplicate and direct public enrollment is refused',()=>{
+ assert.equal(call('ApproveRequest',{sessionToken:'staff-test',approvalToken}).code,'7093');
  assert.equal(rows.filter(r=>r[0]===7093).length,1);
- assert.equal(call('Enroll',{mode:'new',registrationCode,salt:s,proof:'0'.repeat(64),fields}).ok,false);
+ assert.equal(call('Enroll',{mode:'new',registrationCode,salt:s,proof:p,fields}).ok,false);
  assert.equal(call('Enroll',{mode:'new',salt:salt(),proof:p,fields}).ok,false);
 });
 test('wrong password fails; code plus password logs into own row',()=>{
