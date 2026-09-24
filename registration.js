@@ -245,6 +245,11 @@ $('closeAfterSave').addEventListener('click',()=>task(async()=>{
   const old=token;token='';profile=null;pending=null;passwordChangeRequested=false;
   document.querySelectorAll('form').forEach(form=>form.reset());notice('閉じています…');
   try{await api('Logout',{token:old});}catch{}
+  if($('successHeading').textContent==='申請を受け付けました'){
+    notice('登録申請は完了しています。このタブを閉じてください。');
+    window.close();
+    return;
+  }
   window.close();setTimeout(()=>location.replace('./'),150);
 }));
 $('logout').addEventListener('click',()=>task(async()=>{
