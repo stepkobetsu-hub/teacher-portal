@@ -4,6 +4,7 @@ const STAFF_AUTH='https://script.google.com/macros/s/AKfycbypkUc0MqZ07E7pZRglNPe
 const $=id=>document.getElementById(id);
 let mode='new',token='',profile=null,pending=null,enrollmentSalt='',busy=false;
 let passwordChangeRequested=false,notificationStaffSession=null,approvalToken='',approvalStaffSession=null;
+const APPROVAL_SESSION_KEY='step-teacher-approval-admin-v1';
 const labels={surname:'姓',givenName:'名',surnameKana:'フリガナ（姓）',givenNameKana:'フリガナ（名）',postalCode:'郵便番号',address:'住所',bankCode:'銀行コード',branchCode:'支店コード／ゆうちょの記号',accountType:'口座種別',accountNumber:'口座番号／ゆうちょの番号',birthDate:'生年月日',myNumber:'マイナンバー',email:'メールアドレス'};
 function notice(text,error=false){$('message').textContent=text;$('message').classList.toggle('error',error);$('message').hidden=!text;}
 async function post(url,data){
@@ -300,11 +301,12 @@ function showApproval(details){
 }
 $('approvalLoginForm').addEventListener('submit',e=>{e.preventDefault();task(async()=>{
   const f=e.target;notice('申請を確認しています…');
-  const login=await post(STAFF_AUTH,{action:'studentQrLogin',code:f.elements.staffCode.value.trim(),password:f.elements.staffPassword.value});
-  if(!login.success||String(login.permissionLevel)!=='2')throw new Error('管理者権限のスタッフID・パスワードでログインしてください。');
-  approvalStaffSession={staffLoginId:String(login.loginId||login.code||f.elements.staffCode.value.trim()),sessionToken:login.sessionToken};
-  const details=await api('ApprovalPreview',{...approvalStaffSession,approvalToken});
-  f.elements.staffPassword.value='';f.hidden=true;showApproval(details);notice('');
+  const login=await post(STAFF_AUTH,{action:'staffLogin',code:f.elements.staffCode.value.trim(),password:f.elements.staffPassword.value});
+  if(!login.success||String(login.permissionLevel)!=='2'||!login.systemPortalSessionToken)throw new Error('管理者権限のスタッフID・パスワードでログインしてください。');
+  const session={staffLoginId:String(login.loginId||login.code||f.elements.staffCode.value.trim()),sessionToken:login.systemPortalSessionToken,staffSessionKind:'systemPortal'};
+  const details=await api('ApprovalPreview',{...session,approvalToken});
+  approvalStaffSession=session;localStorage.setItem(APPROVAL_SESSION_KEY,JSON.stringify(session));
+  f.elements.staffPassword.value='';f.hidden=true;$('approvalLogout').hidden=false;showApproval(details);notice('');
 });});
 $('approveRequest').addEventListener('click',()=>task(async()=>{
   if(!approvalStaffSession)throw new Error('スタッフ認証をやり直してください。');
@@ -313,6 +315,28 @@ $('approveRequest').addEventListener('click',()=>task(async()=>{
   $('approvalStatus').textContent='承認しました。講師番号：'+result.code+'。D列は自動で1になりました。'+(result.notificationWarning?' '+result.notificationWarning:'');
   $('approveRequest').hidden=true;notice('登録が完了しました。');
 }));
+$('approvalLogout').addEventListener('click',()=>task(async()=>{
+  const session=approvalStaffSession;
+  localStorage.removeItem(APPROVAL_SESSION_KEY);approvalStaffSession=null;
+  $('approvalDetail').hidden=true;$('approvalLoginForm').hidden=false;$('approvalLoginForm').reset();$('approvalLogout').hidden=true;
+  notice('ログアウトしました。');
+  if(session)try{await post(STAFF_AUTH,{action:'logoutSystemPortal',systemPortalSessionToken:session.sessionToken});}
+  catch{notice('この画面からログアウトしました。接続できないため管理者セッションの無効化は確認できませんでした。',true);}
+}));
+async function restoreApprovalSession(){
+  let saved;
+  try{saved=JSON.parse(localStorage.getItem(APPROVAL_SESSION_KEY)||'null');}catch{localStorage.removeItem(APPROVAL_SESSION_KEY);}
+  if(!saved||saved.staffSessionKind!=='systemPortal'||!saved.staffLoginId||!saved.sessionToken)return;
+  approvalStaffSession=saved;notice('前回のログインで申請内容を確認しています…');
+  try{
+    const details=await api('ApprovalPreview',{...saved,approvalToken});
+    $('approvalLoginForm').hidden=true;$('approvalLogout').hidden=false;showApproval(details);notice('');
+  }catch(error){
+    approvalStaffSession=null;
+    if(/ログイン|有効期限|権限|無効/.test(error.message))localStorage.removeItem(APPROVAL_SESSION_KEY);
+    notice(error.message+' スタッフIDでログインしてください。',true);
+  }
+}
 window.addEventListener('pagehide',()=>{token='';profile=null;pending=null;notificationStaffSession=null;approvalStaffSession=null;approvalToken='';document.querySelectorAll('form').forEach(f=>f.reset());});
 window.addEventListener('pageshow',event=>{if(event.persisted)location.reload();});
 function receiveInvite(){
@@ -320,7 +344,7 @@ function receiveInvite(){
   if(approval){
     approvalToken=approval[1];history.replaceState(null,'',location.pathname+location.search);
     $('entry').hidden=true;$('editor').hidden=true;$('review').hidden=true;$('success').hidden=true;$('notificationSettingsArea').hidden=true;$('approval').hidden=false;
-    return;
+    task(restoreApprovalSession);return;
   }
   const receivedInvite=TeacherInviteLinks.read(location.hash);
   if(location.hash.includes('registrationCode'))history.replaceState(null,'',location.pathname+location.search);
