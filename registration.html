@@ -7,7 +7,7 @@
 <title>講師登録・変更｜個別指導STEP</title>
 <link rel="icon" type="image/png" sizes="32x32" href="images/favicon.png?v=20260917-teacher-green"><link rel="stylesheet" href="registration.css?v=20260924-approval">
 <script src="registration-links.js?v=20260912-qr" defer></script>
-<script src="registration.js?v=20260924-no-line-after-registration" defer></script>
+<script src="registration.js?v=20260924-approval-persistent-login" defer></script>
 </head>
 <body>
 <main>
@@ -51,6 +51,7 @@
     <p id="approvalStatus"></p><dl id="approvalValues"></dl>
     <button id="approveRequest" class="primary" type="button">この講師を承認して登録する</button>
   </div>
+  <button id="approvalLogout" type="button" hidden>ログアウト</button>
 </section>
 <section id="editor" hidden>
   <div class="account"><div><small>講師番号</small><strong id="teacherCodeDisplay"></strong><span id="teacherNameDisplay"></span></div><div class="account-actions"><button id="logout" type="button">ログアウト</button><button id="closeWithoutSaving" type="button">登録せずに閉じる</button></div></div>
