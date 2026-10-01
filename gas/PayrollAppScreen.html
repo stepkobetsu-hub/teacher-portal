@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<base target="_top">
+<style>
+:root{--green:#147d57;--deep:#0c4f3c;--pale:#eef8f4;--line:#dbe8e2;--ink:#19322a;--muted:#6d8079;--blue:#2168b0;--amber:#c87812}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP",sans-serif;background:#f5f7f6;color:var(--ink)}
+header{background:linear-gradient(135deg,#0b5942,#15835b);color:white;padding:26px 34px;box-shadow:0 4px 18px #0b594229}
+.header-inner{max-width:1120px;margin:auto;display:flex;justify-content:space-between;gap:20px;align-items:center}
+h1{font-size:26px;margin:0 0 5px}.sub{opacity:.84;font-size:14px}.sheet-link{background:#ffffff18;border:1px solid #ffffff55;color:white;text-decoration:none;padding:10px 15px;border-radius:10px;font-weight:700;white-space:nowrap}
+main{max-width:1120px;margin:24px auto 50px;padding:0 20px}
+.period{background:white;border:1px solid var(--line);border-radius:16px;padding:18px 20px;display:flex;align-items:end;gap:14px;box-shadow:0 5px 18px #153d2f0b}
+.field label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px}
+select,input{height:43px;border:1px solid #c9d9d2;border-radius:9px;background:white;padding:0 12px;font-size:16px;color:var(--ink)}
+.period select{min-width:145px}.period-title{margin-left:auto;font-size:20px;font-weight:800;color:var(--deep)}
+.notice{display:none;margin:15px 0;padding:13px 16px;border-radius:10px;font-weight:700}.notice.ok{display:block;background:#e8f7ef;color:#12633f}.notice.err{display:block;background:#fff0ee;color:#a33428}.notice.busy{display:block;background:#eef4fb;color:#245c91}
+.section-title{font-size:18px;margin:28px 0 13px}.flow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.card{background:white;border:1px solid var(--line);border-radius:15px;padding:18px;display:grid;grid-template-columns:48px 1fr auto;gap:14px;align-items:center;box-shadow:0 3px 12px #153d2f09;transition:.15s}
+.card:hover{transform:translateY(-1px);box-shadow:0 7px 20px #153d2f12}.num{width:45px;height:45px;border-radius:50%;display:grid;place-items:center;background:var(--pale);color:var(--green);font-size:20px;font-weight:900}
+.card h3{margin:0 0 5px;font-size:17px}.desc{font-size:13px;color:var(--muted);line-height:1.5}.state{font-size:12px;margin-top:7px;font-weight:700}.state.done{color:var(--green)}.state.wait{color:#87958f}
+.actions{display:flex;flex-direction:column;gap:7px;min-width:126px}.btn{border:0;border-radius:9px;padding:10px 13px;font-weight:800;cursor:pointer;font-size:13px}.btn.primary{background:var(--green);color:white}.btn.primary:hover{background:var(--deep)}.btn.secondary{background:#edf2f0;color:#3d544c}.btn.blue{background:var(--blue);color:white}.btn.amber{background:var(--amber);color:white}.btn:disabled{opacity:.45;cursor:wait}
+.aux{display:grid;grid-template-columns:1fr 1fr;gap:14px}.aux-card{background:white;border:1px solid var(--line);border-radius:15px;padding:20px}.aux-card h3{margin:0 0 8px}.row{display:flex;gap:10px;align-items:end;flex-wrap:wrap}
+.small{font-size:12px;color:var(--muted);line-height:1.5}.teacher-box{max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:10px;margin-top:12px;padding:8px;display:none}
+.teacher{display:flex;align-items:center;gap:9px;padding:7px 6px;border-bottom:1px solid #edf1ef}.teacher:last-child{border:0}.teacher input{height:auto}
+.footer-note{text-align:center;color:#7c8b85;font-size:12px;margin-top:28px}
+.modal-backdrop{position:fixed;inset:0;z-index:1000;background:#0f1f1a88;display:none;align-items:center;justify-content:center;padding:18px}
+.modal-backdrop.open{display:flex}.yb-dialog{width:min(760px,100%);max-height:94vh;overflow:auto;background:#fff;border-radius:18px;box-shadow:0 24px 70px #0005;padding:26px 30px;color:#202124}
+.yb-title-row{display:flex;align-items:center;justify-content:space-between;gap:18px}.yb-title{font-size:25px;margin:0}.yb-x{border:0;background:transparent;font-size:30px;line-height:1;color:#555;cursor:pointer}
+.yb-lead{margin:14px 0 16px}.yb-note{line-height:1.65;margin-bottom:18px}.yb-section{border:1px solid #dadce0;border-radius:10px;padding:14px 16px;margin:12px 0}.yb-section-title{font-weight:800;margin-bottom:11px}
+.yb-row{display:flex;align-items:center;gap:10px;margin:8px 0}.yb-row label{min-width:58px;font-size:14px}.yb-row input{width:106px}.yb-preview{margin-top:10px;padding:10px 12px;background:#e8f0fe;border-radius:8px;color:#0b57d0;font-weight:800;text-align:center}.yb-preview.pay{background:#e6f4ea;color:#137333}
+.yb-result{display:none;border:1px solid #dadce0;border-radius:10px;margin:14px 0;overflow:hidden;background:#f8f9fa}.yb-result div{display:flex;justify-content:space-between;padding:10px 14px;border-bottom:1px solid #e5e7eb;font-size:16px}.yb-result div:last-child{border-bottom:0;font-weight:800;color:#1a73e8}
+.yb-success{display:none;align-items:center;gap:14px;background:#e6f4ea;border:1px solid #c8e6d4;color:#0b5d2a;border-radius:10px;padding:15px 17px;margin:14px 0}.yb-check{width:36px;height:36px;border-radius:50%;background:#0b8043;color:#fff;display:grid;place-items:center;font-size:24px;font-weight:900}.yb-success-title{font-size:18px;font-weight:800}.yb-msg{min-height:20px;margin:8px 0;text-align:center;font-weight:700}.yb-msg.ok{color:#188038}.yb-msg.err{color:#d93025}
+.yb-btns{display:flex;gap:12px;margin-top:14px}.yb-btn{border:0;border-radius:9px;min-height:54px;padding:10px 18px;font-size:18px;font-weight:800;cursor:pointer}.yb-generate{background:#0b57d0;color:#fff;flex:1.6}.yb-download{display:none;background:#0b57d0;color:#fff;flex:1.7;font-size:21px}.yb-close{background:#0b8043;color:#fff;flex:.55}.yb-foot{font-size:13px;margin-top:11px;color:#555}
+@media(max-width:760px){header{padding:20px}.header-inner{align-items:flex-start;flex-direction:column}.flow,.aux{grid-template-columns:1fr}.period{align-items:stretch;flex-wrap:wrap}.period-title{width:100%;margin:3px 0 0}.card{grid-template-columns:42px 1fr}.actions{grid-column:2;flex-direction:row;flex-wrap:wrap}.sheet-link{width:100%;text-align:center}}
+
+.btn.secondary.review-pending{background:#c65d0b;color:#fff;box-shadow:0 0 0 3px #ffe1bd;text-align:center;text-decoration:none;animation:completed-review-pulse 1.4s ease-in-out infinite}
+.review-prompt{margin-top:9px;color:#a94300;font-size:14px;font-weight:800;line-height:1.5}
+@keyframes completed-review-pulse{0%,100%{opacity:1;box-shadow:0 0 0 3px #ffe1bd}50%{opacity:.65;box-shadow:0 0 0 6px #fff0de}}
+@media(prefers-reduced-motion:reduce){.btn.secondary.review-pending{animation:none}}
+</style>
+</head>
+<body>
+<header><div class="header-inner"><div><h1>講師給与処理</h1><div class="sub">勤怠取込から振込データ出力まで、順番に進められます。</div></div><a id="mainSheet" class="sheet-link" href="https://docs.google.com/spreadsheets/d/1L5aFDXAmfUDkBg8d7X3WqJgMhdMq5tM5sfUZ2G-M58E/edit" target="_blank" rel="noopener noreferrer">Google Sheetで確認・訂正</a></div></header>
+<main>
+<section class="period">
+ <div class="field"><label>処理する年</label><select id="year"></select></div>
+ <div class="field"><label>処理する月</label><select id="month"></select></div>
+ <button class="btn secondary" onclick="loadState()">表示を更新</button>
+ <div class="period-title" id="periodTitle">読み込み中...</div>
+</section>
+<div id="notice" class="notice"></div>
+<h2 class="section-title">毎月の給与処理</h2>
+<div class="flow">
+ <article class="card"><div class="num">1</div><div><h3>出退くん勤怠取込</h3><div class="desc">選択月の出退くんログを、給与処理用の勤怠データへ取り込みます。</div><div id="st-import" class="state wait">未処理</div></div><div class="actions"><button class="btn primary" onclick="runStep('import',this)">取り込む</button><a id="ln-import" class="btn secondary" target="_top">内容を確認</a></div></article>
+ <article class="card"><div class="num">2</div><div><h3>完成版を作成</h3><div class="desc">勤怠、調整内容、講師情報をまとめて給与計算用の完成版を作ります。</div><div id="st-completed" class="state wait">未処理</div><div id="completedReviewPrompt" class="review-prompt" role="status" hidden>内容を確認してください。</div></div><div class="actions"><button class="btn primary" onclick="runStep('completed',this)">作成する</button><a id="ln-completed" class="btn secondary" target="_top" onclick="acknowledgeCompletedReview()">内容を確認</a></div></article>
+ <article class="card"><div class="num">3</div><div><h3>コマ数データを作成</h3><div class="desc">完成版から、講師別・日別の授業コマ数を集計します。</div><div id="st-koma" class="state wait">未処理</div></div><div class="actions"><button class="btn primary" onclick="runStep('koma',this)">作成する</button><a id="ln-koma" class="btn secondary" target="_top">内容を確認</a></div></article>
+ <article class="card"><div class="num">4</div><div><h3>月別給与データへ追加</h3><div class="desc">日々コマ数を更新し、重複を除いて月別データへ追加します。</div><div id="st-monthly" class="state wait">未処理</div></div><div class="actions"><button class="btn primary" onclick="runStep('monthly',this)">追加する</button><a id="ln-monthly" class="btn secondary" target="_top">内容を確認</a></div></article>
+ <article class="card"><div class="num">5</div><div><h3>給与明細を確認</h3><div class="desc">講師に表示される給与明細Webアプリを開いて確認します。</div><div class="state wait">必要なときに確認</div></div><div class="actions"><a id="payslipLink" class="btn blue" target="_top">給与明細を開く</a></div></article>
+ <article class="card"><div class="num">6</div><div><h3>ゆうちょBIZ振込データ出力</h3><div class="desc">給与対象と振込日をポップアップで確認してから、振込用CSVを作成・ダウンロードします。</div><div class="state wait">最終工程</div></div><div class="actions"><button class="btn amber" onclick="openYuchoDialog()">CSVを作成</button></div></article>
+</div>
+<h2 class="section-title">講師登録</h2>
+<div class="aux" style="grid-template-columns:1fr">
+ <section class="aux-card"><h3>新規講師の従業員マスタ登録</h3><p class="small">必要な講師だけ選び、ゆうちょBIZ新規登録用CSVを作成します。</p><button class="btn secondary" onclick="toggleTeachers()">講師を選択</button><div id="teacherBox" class="teacher-box"></div><button id="employeeBtn" class="btn blue" style="display:none;margin-top:10px" onclick="downloadEmployees(this)">選択した講師のCSVを作成</button></section>
+</div>
+<div class="footer-note">複雑な訂正が必要な場合だけ、各「内容を確認」または右上のGoogle Sheetを開いてください。</div>
+</main>
+<div id="yuchoModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="ybTitle" onclick="if(event.target===this)closeYuchoDialog()">
+ <div class="yb-dialog">
+  <div class="yb-title-row"><h2 id="ybTitle" class="yb-title">ゆうちょBIZ振込データ出力</h2><button class="yb-x" onclick="closeYuchoDialog()" aria-label="閉じる">×</button></div>
+  <div class="yb-lead">データ生成後、内容を確認してダウンロードし、ゆうちょBIZへアップロードしてください。</div>
+  <div class="yb-note">※振込日は翌月の指定日になります。<br>（例：5月分データを作成 → 6月15日振込）</div>
+  <div id="ybForm">
+   <div class="yb-section"><div class="yb-section-title">給与対象</div>
+    <div class="yb-row"><label for="ybYear">年</label><input type="number" id="ybYear" min="2020" max="2099" oninput="updateYuchoPreview()"><span>年</span></div>
+    <div class="yb-row"><label for="ybMonth">月</label><input type="number" id="ybMonth" min="1" max="12" oninput="updateYuchoPreview()"><span>月</span></div>
+    <div id="ybSalaryPreview" class="yb-preview"></div>
+   </div>
+   <div class="yb-section"><div class="yb-section-title">振込日</div>
+    <div class="yb-row"><label for="ybPayday">日付</label><input type="number" id="ybPayday" value="15" min="1" max="31" oninput="updateYuchoPreview()"><span>日</span></div>
+    <div id="ybTransferPreview" class="yb-preview pay"></div>
+   </div>
+  </div>
+  <div id="ybResult" class="yb-result">
+   <div><span>対象年月</span><span id="ybResultYm"></span></div>
+   <div><span>振込件数</span><span id="ybResultCount"></span></div>
+   <div><span>振込合計金額</span><span id="ybResultTotal"></span></div>
+   <div><span>作成ファイル</span><span id="ybResultFile"></span></div>
+  </div>
+  <div id="ybSuccess" class="yb-success"><div class="yb-check">✓</div><div><div class="yb-success-title">データの生成が完了しました。</div><div>下の「ダウンロード」ボタンを押すと、ブラウザのダウンロード先へCSVを保存します。</div></div></div>
+  <div id="ybMsg" class="yb-msg"></div>
+  <div class="yb-btns">
+   <button id="ybDownload" class="yb-btn yb-download" onclick="downloadYuchoFile()">⬇ ダウンロード</button>
+   <button id="ybGenerate" class="yb-btn yb-generate" onclick="generateYuchoData()">⚙ データ生成</button>
+   <button class="yb-btn yb-close" onclick="closeYuchoDialog()">閉じる</button>
+  </div>
+  <div class="yb-foot">※「データ生成」だけではファイルは保存されません。生成完了後に「ダウンロード」を押してください。</div>
+ </div>
+</div>
+<script>
+var appState=null;
+var completedReviewToken='',completedReviewKey='';
+function updateCompletedReview(s,force){
+ var pr=s&&s.progress&&s.progress.completed;
+ var ln=document.getElementById('ln-completed'),prompt=document.getElementById('completedReviewPrompt');
+ completedReviewKey='payroll-completed-review-'+s.year+'-'+s.month;
+ completedReviewToken=pr&&pr.done?String(pr.at||'')+'|'+String(pr.message||''):'';
+ var reviewed=false;
+ try{if(force)localStorage.removeItem(completedReviewKey);reviewed=localStorage.getItem(completedReviewKey)===completedReviewToken}catch(e){}
+ var pending=!!completedReviewToken&&!reviewed;
+ ln.classList.toggle('review-pending',pending);
+ prompt.hidden=!pending;
+ if(pending)ln.setAttribute('aria-describedby','completedReviewPrompt');else ln.removeAttribute('aria-describedby');
+}
+function acknowledgeCompletedReview(){
+ try{if(completedReviewToken)localStorage.setItem(completedReviewKey,completedReviewToken)}catch(e){}
+ document.getElementById('ln-completed').classList.remove('review-pending');
+ document.getElementById('ln-completed').removeAttribute('aria-describedby');
+ document.getElementById('completedReviewPrompt').hidden=true;
+}
+
+function init(){
+ var y=document.getElementById('year'),m=document.getElementById('month'),now=new Date();
+ for(var i=now.getFullYear()-1;i<=now.getFullYear()+2;i++){var o=document.createElement('option');o.value=i;o.textContent=i+'年';y.appendChild(o)}
+ for(var j=1;j<=12;j++){var p=document.createElement('option');p.value=j;p.textContent=j+'月';m.appendChild(p)}
+ y.value=now.getFullYear();m.value=now.getMonth()+1;
+ loadState();
+}
+function loadState(){
+ setNotice('データを確認しています...','busy');
+ google.script.run.withSuccessHandler(renderState).withFailureHandler(showError).getPayrollAppState(Number(year.value),Number(month.value));
+}
+function renderState(s){
+ appState=s;document.getElementById('periodTitle').textContent=s.period+' 給与処理';
+ document.getElementById('payslipLink').href=s.payslipUrl||'#';
+ var map={import:'入退くんCSV',completed:'完成版',koma:'コマ数データ',monthly:'月別データ'};
+ Object.keys(map).forEach(function(k){var sh=s.sheets[map[k]],ln=document.getElementById('ln-'+k);ln.href=sh?sh.url:s.sheetUrl;var st=document.getElementById('st-'+k),pr=s.progress[k];if(pr&&pr.done){st.className='state done';st.textContent='✓ '+pr.message+(pr.at?'（'+pr.at+'）':'')}else{st.className='state wait';st.textContent=k==='import'&&s.attendanceRows?'✓ 勤怠 '+s.attendanceRows+'行':'未処理'}});
+ updateCompletedReview(s,false);renderTeachers(s.teachers||[]);clearNotice();
+}
+function runStep(step,btn){
+ var labels={import:'勤怠データを入れ替えて取り込みます。よろしいですか？',completed:'完成版を作成します。よろしいですか？',koma:'コマ数データを作成します。よろしいですか？',monthly:'月別データへ追加します。登録済みの重複分は自動で除きます。よろしいですか？'};
+ if(!confirm(labels[step]))return;busy(btn,true);setNotice('処理しています。画面を閉じずにお待ちください...','busy');
+ google.script.run.withSuccessHandler(function(r){busy(btn,false);renderState(r.state);if(step==='completed')updateCompletedReview(r.state,true);setNotice(r.message+(step==='completed'?' 内容を確認してください。':''),'ok')}).withFailureHandler(function(e){busy(btn,false);showError(e)}).runPayrollAppStep(step,Number(year.value),Number(month.value));
+}
+function renderTeachers(list){
+ var box=document.getElementById('teacherBox');box.innerHTML='';
+ list.forEach(function(t){var l=document.createElement('label');l.className='teacher';l.innerHTML='<input type="checkbox" value="'+esc(t.code)+'"><span><b>'+esc(t.code)+'</b>　'+esc(t.name)+'</span>';box.appendChild(l)});
+}
+function toggleTeachers(){var b=document.getElementById('teacherBox'),x=document.getElementById('employeeBtn'),show=b.style.display!=='block';b.style.display=show?'block':'none';x.style.display=show?'inline-block':'none'}
+function downloadEmployees(btn){var codes=Array.prototype.map.call(document.querySelectorAll('#teacherBox input:checked'),function(x){return x.value});if(!codes.length){setNotice('講師を1人以上選択してください。','err');return}busy(btn,true);google.script.run.withSuccessHandler(function(r){busy(btn,false);downloadB64(r.b64,r.name);setNotice(r.count+'人分の従業員マスタCSVを作成しました。','ok')}).withFailureHandler(function(e){busy(btn,false);showError(e)}).payrollAppEmployeeCsv(codes)}
+var yuchoFileText='',yuchoFileName='';
+function openYuchoDialog(){
+ var yy=Number(document.getElementById('year').value),mm=Number(document.getElementById('month').value);
+ document.getElementById('ybYear').value=yy;document.getElementById('ybMonth').value=mm;document.getElementById('ybPayday').value=15;
+ resetYuchoDialog();updateYuchoPreview();document.getElementById('yuchoModal').classList.add('open');document.body.style.overflow='hidden';
+}
+function closeYuchoDialog(){document.getElementById('yuchoModal').classList.remove('open');document.body.style.overflow=''}
+function updateYuchoPreview(){
+ var yy=Number(document.getElementById('ybYear').value),mm=Number(document.getElementById('ybMonth').value),dd=Number(document.getElementById('ybPayday').value);
+ var sy=document.getElementById('ybSalaryPreview'),tr=document.getElementById('ybTransferPreview');
+ if(yy&&mm>=1&&mm<=12){sy.textContent=yy+'年'+mm+'月分給与を作成します';var ty=yy,tm=mm+1;if(tm===13){ty++;tm=1}tr.textContent=dd>=1&&dd<=31?ty+'年'+tm+'月'+dd+'日振込分を作成します':ty+'年'+tm+'月の振込分を作成します'}else{sy.textContent='年・月を入力してください';tr.textContent='年・月・振込日を入力してください'}
+}
+function resetYuchoDialog(){
+ yuchoFileText='';yuchoFileName='';document.getElementById('ybForm').style.display='block';document.getElementById('ybResult').style.display='none';document.getElementById('ybSuccess').style.display='none';document.getElementById('ybDownload').style.display='none';
+ var b=document.getElementById('ybGenerate');b.disabled=false;b.textContent='⚙ データ生成';b.onclick=generateYuchoData;showYuchoMsg('');
+}
+function generateYuchoData(){
+ var yy=Number(document.getElementById('ybYear').value),mm=Number(document.getElementById('ybMonth').value),dd=Number(document.getElementById('ybPayday').value);
+ if(!yy||mm<1||mm>12){showYuchoMsg('年・月を正しく入力してください。','err');return}if(dd<1||dd>31){showYuchoMsg('振込日を正しく入力してください。','err');return}
+ var b=document.getElementById('ybGenerate');b.disabled=true;b.textContent='生成中...';showYuchoMsg('振込データを生成しています...');
+ google.script.run.withSuccessHandler(function(r){b.disabled=false;if(!r||!r.ok){b.textContent='⚙ データ生成';showYuchoMsg((r&&r.message)||'作成できませんでした。','err');return}
+  yuchoFileText=r.text||'';yuchoFileName=r.fileName||'振込データ.csv';document.getElementById('ybResultYm').textContent=r.year+'年'+r.month+'月';document.getElementById('ybResultCount').textContent=r.count+'件';document.getElementById('ybResultTotal').textContent=Number(r.total||0).toLocaleString()+'円';document.getElementById('ybResultFile').textContent=yuchoFileName;
+  document.getElementById('ybForm').style.display='none';document.getElementById('ybResult').style.display='block';document.getElementById('ybSuccess').style.display='flex';document.getElementById('ybDownload').style.display='inline-block';b.textContent='← 戻る';b.onclick=function(){resetYuchoDialog();updateYuchoPreview()};showYuchoMsg('');
+ }).withFailureHandler(function(e){b.disabled=false;b.textContent='⚙ データ生成';showYuchoMsg((e&&e.message)||String(e),'err')}).payrollAppTransferCsv(yy,mm,dd);
+}
+function downloadYuchoFile(){
+ if(!yuchoFileText){showYuchoMsg('先にデータを生成してください。','err');return}var bytes=encodeYuchoSjis(yuchoFileText),blob=new Blob([bytes],{type:'text/csv'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=yuchoFileName;a.click();setTimeout(function(){URL.revokeObjectURL(u)},1000);showYuchoMsg('ダウンロードしました：'+yuchoFileName,'ok');
+}
+function encodeYuchoSjis(s){var bytes=[];for(var i=0;i<s.length;i++){var c=s.charCodeAt(i);if(c===13)bytes.push(13);else if(c===10)bytes.push(10);else if(c>=0xFF61&&c<=0xFF9F)bytes.push(c-0xFF61+0xA1);else if(c<0x80)bytes.push(c);else bytes.push(0x3F)}return new Uint8Array(bytes)}
+function showYuchoMsg(t,c){var e=document.getElementById('ybMsg');e.textContent=t;e.className='yb-msg '+(c||'')}
+function downloadB64(b64,name){var bin=atob(b64),a=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);var blob=new Blob([a],{type:'text/csv'}),u=URL.createObjectURL(blob),link=document.createElement('a');link.href=u;link.download=name||'data.csv';link.click();setTimeout(function(){URL.revokeObjectURL(u)},1000)}
+function busy(btn,on){btn.disabled=on;btn.dataset.old=btn.dataset.old||btn.textContent;btn.textContent=on?'処理中...':btn.dataset.old}
+function setNotice(t,c){var n=document.getElementById('notice');n.textContent=t;n.className='notice '+c;n.scrollIntoView({behavior:'smooth',block:'nearest'})}
+function clearNotice(){var n=document.getElementById('notice');n.className='notice';n.textContent=''}
+function showError(e){setNotice((e&&e.message)||String(e),'err')}
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+document.getElementById('year').addEventListener('change',loadState);document.getElementById('month').addEventListener('change',loadState);init();
+</script>
+</body>
+</html>
