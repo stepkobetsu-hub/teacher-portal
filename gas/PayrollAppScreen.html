@@ -14,7 +14,7 @@ main{max-width:1120px;margin:24px auto 50px;padding:0 20px}
 .period{background:white;border:1px solid var(--line);border-radius:16px;padding:18px 20px;display:flex;align-items:end;gap:14px;box-shadow:0 5px 18px #153d2f0b}
 .field label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px}
 select,input{height:43px;border:1px solid #c9d9d2;border-radius:9px;background:white;padding:0 12px;font-size:16px;color:var(--ink)}
-.period select{min-width:145px}.period-title{margin-left:auto;font-size:20px;font-weight:800;color:var(--deep)}
+.period select{min-width:180px;height:56px;font-size:21px;font-weight:700}.period-title{margin-left:auto;font-size:20px;font-weight:800;color:var(--deep)}
 .notice{display:none;margin:15px 0;padding:13px 16px;border-radius:10px;font-weight:700}.notice.ok{display:block;background:#e8f7ef;color:#12633f}.notice.err{display:block;background:#fff0ee;color:#a33428}.notice.busy{display:block;background:#eef4fb;color:#245c91}
 .section-title{font-size:18px;margin:28px 0 13px}.flow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
 .card{background:white;border:1px solid var(--line);border-radius:15px;padding:18px;display:grid;grid-template-columns:48px 1fr auto;gap:14px;align-items:center;box-shadow:0 3px 12px #153d2f09;transition:.15s}
@@ -104,17 +104,16 @@ var completedReviewToken='',completedReviewKey='';
 function updateCompletedReview(s,force){
  var pr=s&&s.progress&&s.progress.completed;
  var ln=document.getElementById('ln-completed'),prompt=document.getElementById('completedReviewPrompt');
- completedReviewKey='payroll-completed-review-'+s.year+'-'+s.month;
+ completedReviewKey='payroll-completed-review-pending-'+s.year+'-'+s.month;
  completedReviewToken=pr&&pr.done?String(pr.at||'')+'|'+String(pr.message||''):'';
- var reviewed=false;
- try{if(force)localStorage.removeItem(completedReviewKey);reviewed=localStorage.getItem(completedReviewKey)===completedReviewToken}catch(e){}
- var pending=!!completedReviewToken&&!reviewed;
+ var pending=!!completedReviewToken&&force;
+ try{if(force)localStorage.setItem(completedReviewKey,completedReviewToken);pending=!!completedReviewToken&&localStorage.getItem(completedReviewKey)===completedReviewToken}catch(e){}
  ln.classList.toggle('review-pending',pending);
  prompt.hidden=!pending;
  if(pending)ln.setAttribute('aria-describedby','completedReviewPrompt');else ln.removeAttribute('aria-describedby');
 }
 function acknowledgeCompletedReview(){
- try{if(completedReviewToken)localStorage.setItem(completedReviewKey,completedReviewToken)}catch(e){}
+ try{if(completedReviewToken)localStorage.removeItem(completedReviewKey)}catch(e){}
  document.getElementById('ln-completed').classList.remove('review-pending');
  document.getElementById('ln-completed').removeAttribute('aria-describedby');
  document.getElementById('completedReviewPrompt').hidden=true;
@@ -124,7 +123,8 @@ function init(){
  var y=document.getElementById('year'),m=document.getElementById('month'),now=new Date();
  for(var i=now.getFullYear()-1;i<=now.getFullYear()+2;i++){var o=document.createElement('option');o.value=i;o.textContent=i+'年';y.appendChild(o)}
  for(var j=1;j<=12;j++){var p=document.createElement('option');p.value=j;p.textContent=j+'月';m.appendChild(p)}
- y.value=now.getFullYear();m.value=now.getMonth()+1;
+ var previous=new Date(now.getFullYear(),now.getMonth()-1,1);
+ y.value=previous.getFullYear();m.value=previous.getMonth()+1;
  loadState();
 }
 function loadState(){
