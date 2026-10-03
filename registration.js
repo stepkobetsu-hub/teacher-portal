@@ -274,7 +274,7 @@ $('notificationSettingsButton').addEventListener('click',()=>{
 $('notificationSettingsLoginForm').addEventListener('submit',e=>{e.preventDefault();task(async()=>{
   const f=e.target;notice('確認メールの送信先を読み込んでいます…');
   const login=await post(STAFF_AUTH,{action:'studentQrLogin',code:f.elements.staffCode.value.trim(),password:f.elements.staffPassword.value});
-  if(!login.success||!['2','3','4'].includes(String(login.permissionLevel)))throw new Error('スタッフID・パスワードと利用権限を確認してください。');
+  if(!login.success||!['1','2','3','4'].includes(String(login.permissionLevel)))throw new Error('スタッフID・パスワードと利用権限を確認してください。');
   notificationStaffSession={staffLoginId:String(login.loginId||login.code||f.elements.staffCode.value.trim()),sessionToken:login.sessionToken};
   const result=await api('NotificationSettingsGet',notificationStaffSession);
   const form=$('notificationSettingsForm');[1,2,3].forEach(index=>{form.elements['recipient'+index].value=result.recipients[index-1]||'';});
