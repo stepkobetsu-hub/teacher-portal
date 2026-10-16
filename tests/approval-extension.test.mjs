@@ -42,12 +42,14 @@ assert(request.pending);assert.equal(masterRows[5][0],'');
 const token=sent[0].body.match(/#approval=([a-f0-9]{64})/)[1];
 assert(sent[0].body.includes('生年月日：2001/02/03'));
 requests.rows[1][6]=new Date('2001-02-03T00:00:00Z'); // Google Sheets can read date-looking cells as Date objects.
-assert.throws(()=>ctx.taApprovalPreview_({approvalToken:token},{permissionLevel:'3'}));
-assert.throws(()=>ctx.taApproveRequest_({approvalToken:token},{permissionLevel:'3'}));
+assert.throws(()=>ctx.taApprovalPreview_({approvalToken:token},{permissionLevel:'1'}));
+assert.throws(()=>ctx.taApproveRequest_({approvalToken:token},{permissionLevel:'1'}));
 assert.equal(masterRows[5][0],'');
+for(const level of ['2','3','4'])assert.equal(ctx.taApprovalPreview_({approvalToken:token},{permissionLevel:level}).status,'確認待ち');
+for(const level of ['0','','invalid'])assert.throws(()=>ctx.taRequireAdmin_({permissionLevel:level}));
 const preview=ctx.taApprovalPreview_({approvalToken:token},{permissionLevel:'2'});
 assert.equal(preview.status,'確認待ち');assert.equal(preview.applicant.birthDate,'2001/02/03');
-const approved=ctx.taApproveRequest_({approvalToken:token},{permissionLevel:'2'});
+const approved=ctx.taApproveRequest_({approvalToken:token},{permissionLevel:'4'});
 assert.equal(approved.code,'7093');assert.equal(masterRows[5][3],1);
 assert.equal(masterRows[5][16],'STEP-7093');assert.equal(masterRows[5][35],'0203');
 assert.equal(ctx.taApproveRequest_({approvalToken:token},{permissionLevel:'2'}).replayed,true);
