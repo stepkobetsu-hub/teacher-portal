@@ -302,7 +302,7 @@ function showApproval(details){
 $('approvalLoginForm').addEventListener('submit',e=>{e.preventDefault();task(async()=>{
   const f=e.target;notice('申請を確認しています…');
   const login=await post(STAFF_AUTH,{action:'staffLogin',code:f.elements.staffCode.value.trim(),password:f.elements.staffPassword.value});
-  if(!login.success||String(login.permissionLevel)!=='2'||!login.systemPortalSessionToken)throw new Error('管理者権限のスタッフID・パスワードでログインしてください。');
+  if(!login.success||!['2','3','4'].includes(String(login.permissionLevel))||!login.systemPortalSessionToken)throw new Error('管理者権限のスタッフID・パスワードでログインしてください。');
   const session={staffLoginId:String(login.loginId||login.code||f.elements.staffCode.value.trim()),sessionToken:login.systemPortalSessionToken,staffSessionKind:'systemPortal'};
   const details=await api('ApprovalPreview',{...session,approvalToken});
   approvalStaffSession=session;localStorage.setItem(APPROVAL_SESSION_KEY,JSON.stringify(session));
