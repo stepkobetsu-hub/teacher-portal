@@ -64,7 +64,7 @@ function taRequest_(body){
   return {tokenHash:tokenHash,request:request,sheet:sheet,values:values};
 }
 function taRequireAdmin_(staff){
-  if(String(staff&&staff.permissionLevel)!=='2')trError_('管理者権限のスタッフIDでログインしてください。');
+  if(['2','3','4'].indexOf(String(staff&&staff.permissionLevel))<0)trError_('管理者権限のスタッフIDでログインしてください。');
 }
 
 function taApprovalPreview_(body,staff){
