@@ -99,14 +99,39 @@ function togglePortalShare() {
 
 function showAttendance() {
   const savedCode = localStorage.getItem("teacherCode");
-  if (savedCode) {
+  if (!savedCode) {
     showPage("loginPage");
-    const codeEl = document.getElementById("code");
-    if (codeEl) codeEl.value = savedCode;
-    login();
     return;
   }
-  showPage("loginPage");
+
+  // 同じ端末で初回ログイン済みなら、再ログイン画面を挟まず復元する。
+  const name = localStorage.getItem("teacherName") || "";
+  teacher = { code: savedCode, name };
+  document.getElementById("code").value = savedCode;
+  document.getElementById("teacherCodeDisplay").textContent = savedCode;
+  document.getElementById("teacherNameDisplay").textContent = name;
+  resetForm(false);
+  showPage("formPage");
+
+  // 登録情報を再確認。通信エラー時も端末の記憶は保持する。
+  jsonp({ action: "getTeacher", code: savedCode }).then((res) => {
+    if (localStorage.getItem("teacherCode") !== savedCode) return;
+    if (!res || !res.ok) {
+      // 登録の無効化等、明確に存在しない場合だけ再認証を案内する。
+      teacher = null;
+      clearTeacherSession();
+      document.getElementById("code").value = "";
+      showPage("loginPage");
+      showLoginMsg((res && res.message) || "講師情報を確認できません。管理者に連絡してください。");
+      return;
+    }
+    teacher = res.teacher;
+    saveTeacherSession(savedCode, res.teacher);
+    document.getElementById("teacherCodeDisplay").textContent = savedCode;
+    document.getElementById("teacherNameDisplay").textContent = res.teacher.name || "";
+  }).catch(() => {
+    // 一時的な通信障害では強制ログアウトしない。
+  });
 }
 
 function showNyutaikun() {
