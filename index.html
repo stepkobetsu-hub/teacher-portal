@@ -99,7 +99,11 @@
         <div class="teacherCode" id="teacherCodeDisplay">----</div>
         <div class="teacherName" id="teacherNameDisplay">----</div>
       </div>
-      <div id="attendanceReceiptPanel" class="attendanceReceipt hidden" aria-live="polite">\n        <div id="attendanceReceiptStatus" class="receiptHeading"></div>\n        <div id="attendanceReceiptDetails" class="receiptDetails"></div>\n      </div>\n      <label>出勤日</label>
+      <div id="attendanceReceiptPanel" class="attendanceReceipt hidden" aria-live="polite">
+        <div id="attendanceReceiptStatus" class="receiptHeading"></div>
+        <div id="attendanceReceiptDetails" class="receiptDetails"></div>
+      </div>
+      <label>出勤日</label>
       <div class="dateBox"><div id="dateText" class="dateText"></div></div>
       <div class="date-change-area">
         <label for="workDate" class="date-change-label">出勤日を変更</label>
@@ -139,7 +143,8 @@
       <label>その他・備考</label>
       <textarea id="memo" placeholder="必要な場合のみ入力"></textarea>
       <button id="submitBtn" onclick="submitForm()">送信する</button>
-      <div id="sending" class="sending hidden">📩 送信しています...</div>\n      <div id="attendanceSubmitStatus" class="attendanceReceipt hidden" role="status" aria-live="assertive"></div>
+      <div id="sending" class="sending hidden">📩 送信しています...</div>
+      <div id="attendanceSubmitStatus" class="attendanceReceipt hidden" role="status" aria-live="assertive"></div>
     </div>
   </section>
 
@@ -147,7 +152,8 @@
     <div class="card doneBox">
       <button class="back" onclick="backHome()">← トップへ</button>
       <div class="doneTitle">送信完了しました</div>
-      <div id="completeMessage" class="doneSub"></div>\n      <div id="receiptCompletedDetails" class="attendanceReceipt receiptDetails" role="status"></div>
+      <div id="completeMessage" class="doneSub"></div>
+      <div id="receiptCompletedDetails" class="attendanceReceipt receiptDetails" role="status"></div>
       <div id="randomMessage" class="randomMessage"></div>
       <div class="nyutaikunReminder">
         <div class="nyuTitle">入退くんも忘れずにね</div>
