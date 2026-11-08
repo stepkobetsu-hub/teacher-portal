@@ -164,3 +164,9 @@ button:focus-visible,
 .date-change-input:focus {
   outline: 3px solid rgba(37, 99, 235, 0.25);
 }
+
+/* 授業報告のサーバー受付応答記録 */
+.attendanceReceipt{padding:14px;margin:12px 0 18px;background:#ecfdf5;color:#065f46;border:2px solid #86efac;border-radius:14px;line-height:1.6;text-align:left;white-space:pre-line;overflow-wrap:anywhere;font-size:14px;font-weight:700}
+.receiptHeading{font-size:18px;font-weight:900;margin-bottom:7px}
+.receiptDetails{font-size:14px;white-space:pre-line;line-height:1.7}
+.attendanceReceipt.receiptUncertain{background:#fff7ed;color:#9a3412;border-color:#fdba74}
