@@ -20,6 +20,7 @@ window.addEventListener("DOMContentLoaded", () => {
   setGreeting();
   setupPortalShare();
   openRequestedView();
+  renderAttendanceReceipt();
 });
 
 function openRequestedView() {
@@ -112,6 +113,7 @@ function showAttendance() {
   document.getElementById("teacherNameDisplay").textContent = name;
   resetForm(false);
   showPage("formPage");
+  renderAttendanceReceipt();
 
   // 登録情報を再確認。通信エラー時も端末の記憶は保持する。
   jsonp({ action: "getTeacher", code: savedCode }).then((res) => {
@@ -225,6 +227,7 @@ async function login() {
     document.getElementById("teacherNameDisplay").textContent = teacher.name || "";
     resetForm(false);
     showPage("formPage");
+    renderAttendanceReceipt();
   } catch (err) {
     showLoginMsg(err.message || "エラーが発生しました。もう一度お試しください。");
   }
@@ -266,10 +269,70 @@ function toggleOther() {
   document.getElementById("otherBox").classList.toggle("hidden", koma !== "その他");
 }
 
+const ATTENDANCE_RECEIPT_PREFIX = "stepAttendanceReceipt:";
+
+function attendanceReceiptKey(code) {
+  return ATTENDANCE_RECEIPT_PREFIX + String(code || "");
+}
+
+function readAttendanceReceipt(code) {
+  try {
+    return JSON.parse(localStorage.getItem(attendanceReceiptKey(code)) || "null");
+  } catch (_) {
+    return null;
+  }
+}
+
+function saveAttendanceReceipt(receipt) {
+  try {
+    localStorage.setItem(attendanceReceiptKey(receipt.code), JSON.stringify(receipt));
+  } catch (_) {
+    // 保存容量不足等では、サーバー受付の成否そのものは変更しない。
+  }
+}
+
+function formatReceiptTime(iso) {
+  if (!iso) return "日時不明";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "日時不明";
+  return d.toLocaleString("ja-JP", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit" });
+}
+
+function renderAttendanceReceipt() {
+  const code = (teacher && teacher.code) || localStorage.getItem("teacherCode");
+  const receipt = readAttendanceReceipt(code);
+  const panel = document.getElementById("attendanceReceiptPanel");
+  if (!panel) return;
+  if (!receipt || !code) {
+    panel.classList.add("hidden");
+    return;
+  }
+  panel.classList.remove("hidden");
+  const title = document.getElementById("attendanceReceiptStatus");
+  const details = document.getElementById("attendanceReceiptDetails");
+  const confirmed = receipt.status === "accepted";
+  title.textContent = confirmed ? "✅ 前回の報告：サーバー受付済み" : "⚠️ 前回の報告：受付状況が未確認";
+  panel.classList.toggle("receiptUncertain", !confirmed);
+  const koma = receipt.koma === "その他" ? receipt.komaOther : receipt.koma;
+  details.textContent = `出勤日：${receipt.workDate} / ${receipt.place} / ${koma}コマ
+${confirmed ? "成功応答を確認" : "通信が途切れたため保存の成否は未確認"}：${formatReceiptTime(receipt.timestamp)}
+${confirmed ? "この端末に確認記録を保存しています。" : "重複を避けるため、再送前に管理者へ確認してください。"}`;
+}
+
+function showSubmissionUncertain(message) {
+  const el = document.getElementById("attendanceSubmitStatus");
+  if (!el) return;
+  el.classList.remove("hidden");
+  el.classList.add("receiptUncertain");
+  el.textContent = "⚠️ 受付状況を確認できませんでした。\n" +
+    "通信が途切れたため、保存された可能性があります。\n" +
+    "二重報告を防ぐため、再送信する前に教室へ確認してください。\n" +
+    (message || "");
+}
+
 async function submitForm() {
   if (!teacher) {
-    alert("ログインし直してください。");
-    showPage("loginPage");
+    alert("講師情報を確認できません。授業報告画面を開き直してください。");
     return;
   }
   const lessons = Array.from(document.querySelectorAll(".checks input:checked")).map((el) => el.value);
@@ -294,19 +357,56 @@ async function submitForm() {
   }
 
   const btn = document.getElementById("submitBtn");
+  if (btn.disabled) return;
+  const previous = readAttendanceReceipt(teacher.code);
+  // 同一内容で直前に受付済みなら意図しない二重送信を抑止する。
+  if (previous && previous.status === "accepted" &&
+      previous.workDate === data.workDate && previous.lessons === data.lessons &&
+      previous.koma === data.koma && previous.komaOther === data.komaOther &&
+      previous.place === data.place && previous.memo === data.memo) {
+    const oldTime = new Date(previous.timestamp).getTime();
+    if (Date.now() - oldTime < 10 * 60 * 1000) {
+      alert("同じ内容の報告は既にサーバーで受付済みです。\n前回の受付記録をご確認ください。");
+      renderAttendanceReceipt();
+      return;
+    }
+  }
   btn.disabled = true;
   btn.textContent = "送信中...";
   document.getElementById("sending").classList.remove("hidden");
+  const notice = document.getElementById("attendanceSubmitStatus");
+  notice.classList.add("hidden");
+  notice.classList.remove("receiptUncertain");
 
+  const attemptedAt = new Date().toISOString();
   try {
     const res = await jsonp(data);
-    if (!res.ok) throw new Error(res.message || "送信できませんでした。");
+    if (!res || !res.ok) throw new Error((res && res.message) || "サーバーが受付を拒否しました。");
+    const acceptedAt = new Date().toISOString();
+    const receipt = { status: "accepted", timestamp: acceptedAt, ...data };
+    saveAttendanceReceipt(receipt);
     const name = res.name || teacher.name;
-    document.getElementById("completeMessage").textContent = `${name}さん、お疲れ様でした。授業報告を受け付けました。`;
+    document.getElementById("completeMessage").textContent =
+      `${name}さん、お疲れ様でした。サーバーから授業報告の受付成功応答を確認しました。`;
+    document.getElementById("receiptCompletedDetails").textContent =
+      `受付応答確認：${formatReceiptTime(acceptedAt)}
+出勤日：${data.workDate} / ${data.place}
+担当：${data.lessons} / ${data.koma === "その他" ? data.komaOther : data.koma}コマ
+※この記録は送信先からの成功応答を端末に控えたものです。保存先シートを再照会した結果ではありません。`;
     document.getElementById("randomMessage").textContent = randomMessage();
     showPage("completePage");
+    renderAttendanceReceipt();
   } catch (err) {
-    alert(err.message || "送信できませんでした。もう一度お試しください。");
+    const uncertain = !err || /タイムアウト|通信に失敗/.test(err.message || "");
+    if (uncertain) {
+      saveAttendanceReceipt({ status: "uncertain", timestamp: attemptedAt, ...data });
+      showSubmissionUncertain(err.message);
+    } else {
+      notice.classList.remove("hidden", "receiptUncertain");
+      notice.textContent = "❌ サーバーから受付失敗の応答がありました：" + (err.message || "送信できませんでした。");
+    }
+    renderAttendanceReceipt();
+  } finally {
     btn.disabled = false;
     btn.textContent = "送信する";
     document.getElementById("sending").classList.add("hidden");
@@ -333,6 +433,8 @@ function resetForm(resetDate = true) {
   document.getElementById("submitBtn").disabled = false;
   document.getElementById("submitBtn").textContent = "送信する";
   if (resetDate) setToday();
+  const status = document.getElementById("attendanceSubmitStatus");
+  if (status) status.classList.add("hidden");
 }
 
 function backToForm() {
