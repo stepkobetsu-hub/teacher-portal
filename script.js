@@ -20,7 +20,6 @@ window.addEventListener("DOMContentLoaded", () => {
   setGreeting();
   setupPortalShare();
   openRequestedView();
-  renderAttendanceReceipt();
 });
 
 function openRequestedView() {
@@ -98,42 +97,24 @@ function togglePortalShare() {
   box.classList.toggle("hidden");
 }
 
+const ATTENDANCE_TOKEN = "stepAttendanceSession";
+let attendanceSubmitting = false;
+let attendanceHistoryRequest = 0;
+
 function showAttendance() {
-  const savedCode = localStorage.getItem("teacherCode");
-  if (!savedCode) {
+  const token = localStorage.getItem(ATTENDANCE_TOKEN);
+  const code = localStorage.getItem("teacherCode");
+  if (!token || !code || !token.startsWith(code + ".")) {
+    document.getElementById("code").value = code || "";
     showPage("loginPage");
     return;
   }
-
-  // 同じ端末で初回ログイン済みなら、再ログイン画面を挟まず復元する。
-  const name = localStorage.getItem("teacherName") || "";
-  teacher = { code: savedCode, name };
-  document.getElementById("code").value = savedCode;
-  document.getElementById("teacherCodeDisplay").textContent = savedCode;
-  document.getElementById("teacherNameDisplay").textContent = name;
+  teacher = { code, name: localStorage.getItem("teacherName") || "" };
+  document.getElementById("teacherCodeDisplay").textContent = teacher.code;
+  document.getElementById("teacherNameDisplay").textContent = teacher.name;
   resetForm(false);
   showPage("formPage");
-  renderAttendanceReceipt();
-
-  // 登録情報を再確認。通信エラー時も端末の記憶は保持する。
-  jsonp({ action: "getTeacher", code: savedCode }).then((res) => {
-    if (localStorage.getItem("teacherCode") !== savedCode) return;
-    if (!res || !res.ok) {
-      // 登録の無効化等、明確に存在しない場合だけ再認証を案内する。
-      teacher = null;
-      clearTeacherSession();
-      document.getElementById("code").value = "";
-      showPage("loginPage");
-      showLoginMsg((res && res.message) || "講師情報を確認できません。管理者に連絡してください。");
-      return;
-    }
-    teacher = res.teacher;
-    saveTeacherSession(savedCode, res.teacher);
-    document.getElementById("teacherCodeDisplay").textContent = savedCode;
-    document.getElementById("teacherNameDisplay").textContent = res.teacher.name || "";
-  }).catch(() => {
-    // 一時的な通信障害では強制ログアウトしない。
-  });
+  loadAttendanceHistory();
 }
 
 function showNyutaikun() {
@@ -209,27 +190,54 @@ function hideToast() {
   document.getElementById("toast").classList.add("hidden");
 }
 
+async function attendanceApi(action, data = {}) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 40000);
+  try {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      credentials: "omit",
+      headers: { "Content-Type": "text/plain;charset=UTF-8" },
+      body: JSON.stringify({ ...data, action }),
+      signal: controller.signal
+    });
+    if (!response.ok) throw new Error("通信エラー");
+    return await response.json();
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function login() {
   const code = document.getElementById("code").value.trim();
-  if (!code) {
-    showLoginMsg("講師コードを入力してください。");
+  const password = document.getElementById("attendancePassword");
+  const button = document.getElementById("attendanceLoginBtn");
+  if (button.disabled) return;
+  if (!code || !password.value) {
+    showLoginMsg("講師コードとパスワードを入力してください。");
     return;
   }
+  button.disabled = true;
   try {
-    const res = await jsonp({ action: "getTeacher", code });
-    if (!res.ok) {
-      showLoginMsg(res.message || "講師コードが見つかりません。");
+    const result = await attendanceApi("attendanceLogin", { code, password: password.value });
+    if (result.status !== "ok" || !result.token) {
+      const messages = {
+        unauthorized: "講師コードまたはパスワードを確認してください。",
+        rate_limited: "ログイン試行回数が上限に達しました。しばらくしてからお試しください。"
+      };
+      showLoginMsg(messages[result.status] || "通信エラー。時間をおいてお試しください。");
       return;
     }
-    teacher = res.teacher;
-    saveTeacherSession(code, teacher);
-    document.getElementById("teacherCodeDisplay").textContent = code;
-    document.getElementById("teacherNameDisplay").textContent = teacher.name || "";
-    resetForm(false);
-    showPage("formPage");
-    renderAttendanceReceipt();
-  } catch (err) {
-    showLoginMsg(err.message || "エラーが発生しました。もう一度お試しください。");
+    if (localStorage.getItem("teacherCode") !== result.code) clearTeacherSession();
+    saveTeacherSession(result.code, result);
+    localStorage.setItem(ATTENDANCE_TOKEN, result.token);
+    password.value = "";
+    document.getElementById("loginMsg").classList.add("hidden");
+    showAttendance();
+  } catch (_) {
+    showLoginMsg("通信エラー。時間をおいてお試しください。");
+  } finally {
+    button.disabled = false;
   }
 }
 
@@ -244,7 +252,7 @@ function showLoginMsg(msg) {
 function setToday() {
   const today = new Date();
   const el = document.getElementById("workDate");
-  if (el) el.value = today.toISOString().slice(0, 10);
+  if (el) el.value = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Tokyo" }).format(today);
   updateDateText();
 }
 
@@ -269,76 +277,59 @@ function toggleOther() {
   document.getElementById("otherBox").classList.toggle("hidden", koma !== "その他");
 }
 
-const ATTENDANCE_RECEIPT_PREFIX = "stepAttendanceReceipt:";
-
-function attendanceReceiptKey(code) {
-  return ATTENDANCE_RECEIPT_PREFIX + String(code || "");
+function attendanceMessage(element, state, message) {
+  element.dataset.state = state;
+  element.textContent = message;
+  element.classList.remove("hidden");
 }
 
-function readAttendanceReceipt(code) {
+function attendanceExpired(token) {
+  if (localStorage.getItem(ATTENDANCE_TOKEN) !== token) return;
+  localStorage.removeItem(ATTENDANCE_TOKEN);
+  teacher = null;
+  document.getElementById("attendanceHistoryList").replaceChildren();
+  showAttendance();
+  showLoginMsg("ログインの有効期限が切れました。もう一度ログインしてください。");
+}
+
+async function loadAttendanceHistory() {
+  const token = localStorage.getItem(ATTENDANCE_TOKEN);
+  if (!token) return;
+  const request = ++attendanceHistoryRequest;
+  const status = document.getElementById("attendanceHistoryStatus");
+  const list = document.getElementById("attendanceHistoryList");
+  const isCurrent = () => token === localStorage.getItem(ATTENDANCE_TOKEN) &&
+    request === attendanceHistoryRequest;
+  list.replaceChildren();
+  attendanceMessage(status, "loading", "保存先シートを照会中…");
   try {
-    return JSON.parse(localStorage.getItem(attendanceReceiptKey(code)) || "null");
+    const result = await attendanceApi("attendanceHistory", { token });
+    if (!isCurrent()) return;
+    if (result.status === "unauthorized") {
+      attendanceExpired(token);
+      return;
+    }
+    if (result.status !== "ok" || !Array.isArray(result.rows)) throw new Error();
+    attendanceMessage(status, "loading", result.rows.length
+      ? "出勤日・校舎・コマ数・保存状況"
+      : "保存先シートに表示できる報告はありません。");
+    for (const row of result.rows) {
+      const item = document.createElement("li");
+      const state = row.status === "saved" ? "saved" : "unconfirmed";
+      attendanceMessage(item, state,
+        `${row.workDate} / ${row.place} / ${row.koma}コマ — ${state === "saved" ? "保存確認済み" : "保存が確認できない"}`);
+      list.appendChild(item);
+    }
   } catch (_) {
-    return null;
+    if (isCurrent()) attendanceMessage(status, "error", "通信エラー。履歴を再照会してください。");
   }
-}
-
-function saveAttendanceReceipt(receipt) {
-  try {
-    localStorage.setItem(attendanceReceiptKey(receipt.code), JSON.stringify(receipt));
-  } catch (_) {
-    // 保存容量不足等では、サーバー受付の成否そのものは変更しない。
-  }
-}
-
-function formatReceiptTime(iso) {
-  if (!iso) return "日時不明";
-  const d = new Date(iso);
-  if (isNaN(d.getTime())) return "日時不明";
-  return d.toLocaleString("ja-JP", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit" });
-}
-
-function renderAttendanceReceipt() {
-  const code = (teacher && teacher.code) || localStorage.getItem("teacherCode");
-  const receipt = readAttendanceReceipt(code);
-  const panel = document.getElementById("attendanceReceiptPanel");
-  if (!panel) return;
-  if (!receipt || !code) {
-    panel.classList.add("hidden");
-    return;
-  }
-  panel.classList.remove("hidden");
-  const title = document.getElementById("attendanceReceiptStatus");
-  const details = document.getElementById("attendanceReceiptDetails");
-  const confirmed = receipt.status === "accepted";
-  title.textContent = confirmed ? "✅ 前回の報告：サーバー受付済み" : "⚠️ 前回の報告：受付状況が未確認";
-  panel.classList.toggle("receiptUncertain", !confirmed);
-  const koma = receipt.koma === "その他" ? receipt.komaOther : receipt.koma;
-  details.textContent = `出勤日：${receipt.workDate} / ${receipt.place} / ${koma}コマ
-${confirmed ? "成功応答を確認" : "通信が途切れたため保存の成否は未確認"}：${formatReceiptTime(receipt.timestamp)}
-${confirmed ? "この端末に確認記録を保存しています。" : "重複を避けるため、再送前に管理者へ確認してください。"}`;
-}
-
-function showSubmissionUncertain(message) {
-  const el = document.getElementById("attendanceSubmitStatus");
-  if (!el) return;
-  el.classList.remove("hidden");
-  el.classList.add("receiptUncertain");
-  el.textContent = "⚠️ 受付状況を確認できませんでした。\n" +
-    "通信が途切れたため、保存された可能性があります。\n" +
-    "二重報告を防ぐため、再送信する前に教室へ確認してください。\n" +
-    (message || "");
 }
 
 async function submitForm() {
-  if (!teacher) {
-    alert("講師情報を確認できません。授業報告画面を開き直してください。");
-    return;
-  }
+  const token = localStorage.getItem(ATTENDANCE_TOKEN);
+  if (!teacher || !token || attendanceSubmitting) return;
   const lessons = Array.from(document.querySelectorAll(".checks input:checked")).map((el) => el.value);
   const data = {
-    action: "submitAttendance",
-    code: teacher.code,
     workDate: document.getElementById("workDate").value,
     lessons: lessons.join(" / "),
     koma: document.getElementById("koma").value,
@@ -356,60 +347,55 @@ async function submitForm() {
     return;
   }
 
+
   const btn = document.getElementById("submitBtn");
-  if (btn.disabled) return;
-  const previous = readAttendanceReceipt(teacher.code);
-  // 同一内容で直前に受付済みなら意図しない二重送信を抑止する。
-  if (previous && previous.status === "accepted" &&
-      previous.workDate === data.workDate && previous.lessons === data.lessons &&
-      previous.koma === data.koma && previous.komaOther === data.komaOther &&
-      previous.place === data.place && previous.memo === data.memo) {
-    const oldTime = new Date(previous.timestamp).getTime();
-    if (Date.now() - oldTime < 10 * 60 * 1000) {
-      alert("同じ内容の報告は既にサーバーで受付済みです。\n前回の受付記録をご確認ください。");
-      renderAttendanceReceipt();
+  const notice = document.getElementById("attendanceSubmitStatus");
+  const sending = document.getElementById("sending");
+  attendanceSubmitting = true;
+  btn.disabled = true;
+  sending.classList.remove("hidden");
+  attendanceMessage(notice, "loading", "報告を送信し、保存先を照会しています…");
+
+  try {
+    let result;
+    try {
+      result = await attendanceApi("attendanceSubmit", { ...data, token });
+      if (result.status === "unavailable") throw new Error();
+    } catch (_) {
+      // A lost response may follow a committed write. Only read on this path.
+      result = await attendanceApi("attendanceVerify", { ...data, token });
+      if (result.status !== "saved" && result.status !== "unauthorized") {
+        throw new Error();
+      }
+    }
+    if (localStorage.getItem(ATTENDANCE_TOKEN) !== token) return;
+    if (result.status === "unauthorized") {
+      attendanceExpired(token);
       return;
     }
-  }
-  btn.disabled = true;
-  btn.textContent = "送信中...";
-  document.getElementById("sending").classList.remove("hidden");
-  const notice = document.getElementById("attendanceSubmitStatus");
-  notice.classList.add("hidden");
-  notice.classList.remove("receiptUncertain");
-
-  const attemptedAt = new Date().toISOString();
-  try {
-    const res = await jsonp(data);
-    if (!res || !res.ok) throw new Error((res && res.message) || "サーバーが受付を拒否しました。");
-    const acceptedAt = new Date().toISOString();
-    const receipt = { status: "accepted", timestamp: acceptedAt, ...data };
-    saveAttendanceReceipt(receipt);
-    const name = res.name || teacher.name;
-    document.getElementById("completeMessage").textContent =
-      `${name}さん、お疲れ様でした。サーバーから授業報告の受付成功応答を確認しました。`;
-    document.getElementById("receiptCompletedDetails").textContent =
-      `受付応答確認：${formatReceiptTime(acceptedAt)}
-出勤日：${data.workDate} / ${data.place}
-担当：${data.lessons} / ${data.koma === "その他" ? data.komaOther : data.koma}コマ
-※この記録は送信先からの成功応答を端末に控えたものです。保存先シートを再照会した結果ではありません。`;
-    document.getElementById("randomMessage").textContent = randomMessage();
-    showPage("completePage");
-    renderAttendanceReceipt();
-  } catch (err) {
-    const uncertain = !err || /タイムアウト|通信に失敗/.test(err.message || "");
-    if (uncertain) {
-      saveAttendanceReceipt({ status: "uncertain", timestamp: attemptedAt, ...data });
-      showSubmissionUncertain(err.message);
-    } else {
-      notice.classList.remove("hidden", "receiptUncertain");
-      notice.textContent = "❌ サーバーから受付失敗の応答がありました：" + (err.message || "送信できませんでした。");
+    if (result.status === "invalid") {
+      attendanceMessage(notice, "unconfirmed", "保存が確認できない。日付・校舎・コマ数（数字）・備考の長さを確認してください。");
+      return;
     }
-    renderAttendanceReceipt();
+    if (result.status === "saved") {
+      document.getElementById("completeMessage").textContent = `${teacher.name}さん、お疲れ様でした。`;
+      const details = document.getElementById("receiptCompletedDetails");
+      const message = "保存確認済み。報告の保存先シートで一致する行を確認しました。";
+      attendanceMessage(details, "saved",
+        [message, `${data.workDate} / ${data.place} / ${data.koma === "その他" ? data.komaOther : data.koma}コマ`].join("\n"));
+      document.getElementById("randomMessage").textContent = randomMessage();
+      showPage("completePage");
+      return;
+    }
+    attendanceMessage(notice, "unconfirmed", "保存が確認できない。履歴を再照会してください。");
+  } catch (_) {
+    if (localStorage.getItem(ATTENDANCE_TOKEN) === token) {
+      attendanceMessage(notice, "error", "通信エラー。履歴を再照会してください。同じ内容で再送した場合は既存の報告を照合します。");
+    }
   } finally {
+    attendanceSubmitting = false;
     btn.disabled = false;
-    btn.textContent = "送信する";
-    document.getElementById("sending").classList.add("hidden");
+    sending.classList.add("hidden");
   }
 }
 
@@ -440,6 +426,7 @@ function resetForm(resetDate = true) {
 function backToForm() {
   resetForm(true);
   showPage("formPage");
+  loadAttendanceHistory();
 }
 
 function logoutAttendance() {
@@ -451,6 +438,7 @@ function logoutAttendance() {
 }
 
 function saveTeacherSession(code, data) {
+  if (localStorage.getItem("teacherCode") !== code) localStorage.removeItem(ATTENDANCE_TOKEN);
   localStorage.setItem("teacherCode", code);
   localStorage.setItem("teacherName", data.name || "");
   if (data.qrData) {
@@ -460,6 +448,8 @@ function saveTeacherSession(code, data) {
 }
 
 function clearTeacherSession() {
+  localStorage.removeItem(ATTENDANCE_TOKEN);
+  document.getElementById("attendanceHistoryList")?.replaceChildren();
   localStorage.removeItem("teacherCode");
   localStorage.removeItem("teacherName");
   localStorage.removeItem("teacherQrCode");

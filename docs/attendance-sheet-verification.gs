@@ -1,58 +1,209 @@
 /**
- * 個別指導STEP 授業報告の保存先照合 (Apps Script 追加用)
- * 注意: このファイルだけでは機能しません。既存 doGet の action 分岐へ
- *   if (action === "verifyAttendanceSaved") return jsonpOutput_(verifyAttendanceSaved_(e.parameter), e.parameter.callback);
- * を組み込む必要があります。既存 JSONP 応答関数の名前に合わせてください。
- *
- * 対象: 講師給与シートの「完成版」タブ T～AA列。
- * T 氏名, U 出勤日, V 授業, W コマ数, X 備考, Y 勤務場所, Z タイムスタンプ, AA 講師コード
- * 応答は boolean と状態コードのみ。氏名・他講師の記録は公開しません。
- * 既存の認証/アクセス制御を必ず通した後に呼び出してください。
+ * Add to the deployed attendance project. See attendance-rollout.md.
+ * Reads the original response sheet, and writes only through the original report writer.
  */
-function verifyAttendanceSaved_(params) {
-  const code = String(params.code || '').trim();
-  const workDate = String(params.workDate || '').trim(); // YYYY-MM-DD
-  const place = String(params.place || '').trim();
-  const koma = String(params.koma === 'その他' ? params.komaOther : params.koma || '').trim();
-  const lessons = String(params.lessons || '').trim();
-  if (!/^\d{4,8}$/.test(code) || !/^\d{4}-\d{2}-\d{2}$/.test(workDate) ||
-      !place || !koma || !lessons) {
-    return {ok:false, verified:false, status:'invalid_request'};
+function doPost(e) {
+  let result;
+  try {
+    const data = JSON.parse(e.postData.contents);
+    result = attendanceRequest_(data);
+  } catch (_) {
+    result = { status: 'unavailable' };
   }
-  const ss = SpreadsheetApp.openById('1L5aFDXAmfUDkBg8d7X3WqJgMhdMq5tM5sfUZ2G-M58E');
-  const sheet = ss.getSheetByName('完成版');
-  if (!sheet) return {ok:false, verified:false, status:'sheet_unavailable'};
-  const last = sheet.getLastRow();
-  if (last < 2) return {ok:true, verified:false, status:'not_found'};
-  const rows = sheet.getRange(2,20,last-1,8).getDisplayValues();
-  const [, y, m, d] = workDate.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  const dateMatcher = new RegExp('^(?:'+Number(m)+'|'+m+')\\/(?:'+Number(d)+'|'+d+')$');
-  const timeSegments = lessons.split('/').map(s=>s.trim().slice(0,5)).filter(Boolean);
-  for (let i=rows.length-1; i>=0; i--) {
-    const row=rows[i];
-    if (String(row[7]).trim() !== code) continue;
-    const rawDate=String(row[1]||'').trim();
-    if (!(dateMatcher.test(rawDate) || rawDate===workDate || rawDate===y+'/'+Number(m)+'/'+Number(d))) continue;
-    if (String(row[5]||'').trim() !== place) continue;
-    if (String(row[3]||'').trim() !== koma) continue;
-    const storedLessons=String(row[2]||'');
-    if (!timeSegments.every(t=>storedLessons.includes(t.slice(0,5)))) continue;
-    const stamp=String(row[6]||'');
-    // 年が異なる同月同日を誤認しない。タイムスタンプに年がある場合のみ確定。
-    const stampYear=(stamp.match(/(?:^|\D)(20\d{2})(?:\D|$)/)||[])[1] ||
-      (stamp.match(/\/(20\d{2})(?:\s|$)/)||[])[1];
-    if (!stampYear || stampYear !== y) continue;
-    return {ok:true, verified:true, status:'saved'};
-  }
-  return {ok:true, verified:false, status:'not_found'};
+  return ContentService.createTextOutput(JSON.stringify(result))
+    .setMimeType(ContentService.MimeType.JSON);
 }
 
-/*
- * フロントエンド接続時に必要な条件
- * - APIの認証と既存のJSONP出力に統合してから有効化
- * - submitAttendance の成功応答だけで「シート保存確認済み」としない
- * - verifyAttendanceSaved の verified===true でのみ「保存先シート確認済み」と表示
- * - not_found は「未確認」と表示 (未送信とは断定しない)
- * - ログインが講師コードだけの場合、推測可能なコードで照会できないよう認証強化を検討
- * - 実際の送信先と同じスプレッドシート/タブか、導入前に突合
- */
+function attendanceRequest_(data) {
+  if (data.action === 'attendanceHealth') return { status: 'ready', version: 1 };
+  if (data.action === 'attendanceLogin') return attendanceLogin_(data);
+  if (!['attendanceHistory', 'attendanceSubmit', 'attendanceVerify'].includes(data.action)) {
+    return { status: 'invalid' };
+  }
+
+  const code = attendanceIdentity_(data.token);
+  if (!code) return { status: 'unauthorized' };
+  if (data.action === 'attendanceHistory') return attendanceHistory_(code);
+
+  const report = attendanceReport_(data);
+  if (!report) return { status: 'invalid' };
+  if (data.action === 'attendanceVerify') return attendanceReadback_(code, report);
+
+  const lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    const prior = attendanceReadback_(code, report);
+    if (prior.status === 'saved') return prior;
+    submitAttendanceApi_(Object.assign({}, report, { code }));
+    SpreadsheetApp.flush();
+    return attendanceReadback_(code, report);
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function attendanceMaster_(code) {
+  const sheet = SpreadsheetApp.openById(MASTER_SS_ID).getSheetByName(MASTER_SHEET);
+  const count = sheet.getLastRow() - 4;
+  if (count < 1) return null;
+  const rows = sheet.getRange(5, 1, count, 1).createTextFinder(code).matchEntireCell(true).findAll();
+  if (rows.length !== 1) return null;
+  const row = rows[0].getRow();
+  let password = sheet.getRange(row, 36).getDisplayValue().trim();
+  if (/^\d{1,3}$/.test(password)) password = password.padStart(4, '0');
+  if (!password || password === code) return null;
+  return { name: sheet.getRange(row, 2).getDisplayValue(), password };
+}
+
+function attendanceLogin_(data) {
+  const code = String(data.code || '').trim();
+  if (!/^7\d{3}$/.test(code) || typeof data.password !== 'string' ||
+      !data.password || data.password.length > 128) return { status: 'unauthorized' };
+
+  const lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    const props = PropertiesService.getScriptProperties();
+    const rateKey = 'attendance.rate.' + code;
+    const now = Date.now();
+    const old = JSON.parse(props.getProperty(rateKey) || 'null');
+    const rate = old && old.expires > now ? old : { count: 0, expires: now + 3600000 };
+    if (rate.count >= 6) return { status: 'rate_limited' };
+    const account = attendanceMaster_(code);
+    if (!account || !attendanceEqual_(data.password, account.password)) {
+      rate.count++;
+      props.setProperty(rateKey, JSON.stringify(rate));
+      return { status: 'unauthorized' };
+    }
+    props.deleteProperty(rateKey);
+    let secret = props.getProperty('attendance.sessionSecret');
+    if (!secret) {
+      secret = Utilities.getUuid() + Utilities.getUuid();
+      props.setProperty('attendance.sessionSecret', secret);
+    }
+    const claims = code + '.' + (now + 90 * 86400000) + '.' + Utilities.getUuid();
+    return { status: 'ok', code, name: account.name,
+      token: claims + '.' + attendanceSignature_(claims, account.password, secret) };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function attendanceEqual_(a, b) {
+  let difference = a.length ^ b.length;
+  for (let i = 0; i < Math.max(a.length, b.length); i++) {
+    difference |= (a.charCodeAt(i) || 0) ^ (b.charCodeAt(i) || 0);
+  }
+  return difference === 0;
+}
+
+function attendanceSignature_(claims, password, secret) {
+  return Utilities.base64EncodeWebSafe(
+    Utilities.computeHmacSha256Signature(claims + '\n' + password, secret, Utilities.Charset.UTF_8)
+  ).replace(/=+$/, '');
+}
+
+function attendanceIdentity_(token) {
+  const match = /^(7\d{3})\.(\d{13})\.[a-f0-9-]{36}\.([A-Za-z0-9_-]{43})$/.exec(String(token || ''));
+  if (!match || Number(match[2]) <= Date.now()) return null;
+  const secret = PropertiesService.getScriptProperties().getProperty('attendance.sessionSecret');
+  const account = secret && attendanceMaster_(match[1]);
+  const claims = token.slice(0, token.lastIndexOf('.'));
+  return account && attendanceEqual_(match[3], attendanceSignature_(claims, account.password, secret))
+    ? match[1] : null;
+}
+
+function attendanceDate_(value, stamp) {
+  if (value instanceof Date) return Utilities.formatDate(value, 'Asia/Tokyo', 'yyyy-MM-dd');
+  const text = String(value || '').normalize('NFKC').trim().replace(/[年月]/g, '/').replace(/日$/, '');
+  const full = /^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/.exec(text);
+  const short = /^(\d{1,2})\/(\d{1,2})$/.exec(text);
+  const stampDate = stamp instanceof Date
+    ? Utilities.formatDate(stamp, 'Asia/Tokyo', 'yyyy-MM-dd')
+    : String(stamp || '').trim();
+  if (!full && !(short && /^\d{4}[-/]\d{1,2}[-/]\d{1,2}(?:\s|$)/.test(stampDate))) return '';
+  let year = Number(full ? full[1] : stampDate.slice(0, 4));
+  const month = Number(full ? full[2] : short[1]);
+  const day = Number(full ? full[3] : short[2]);
+  // A December report can be submitted after the New Year.
+  if (!full && month === 12 && Number(stampDate.split(/[-/]/)[1]) === 1) year--;
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return date.getUTCMonth() === month - 1 && date.getUTCDate() === day
+    ? date.toISOString().slice(0, 10) : '';
+}
+
+const ATTENDANCE_LESSONS_ = ['13:00～14:15', '14:20～15:35', '15:45～17:00', '17:10～18:25', '18:35～19:50', '20:00～21:15'];
+
+function attendanceSlots_(value) {
+  const slots = String(value || '').normalize('NFKC').split('/').map(slot => {
+    const match = /^\s*((?:[01]\d|2[0-3]):[0-5]\d)\s*(?:[～〜~–-]\s*((?:[01]\d|2[0-3]):[0-5]\d)?)?\s*$/.exec(slot);
+    if (!match) return '';
+    return match[2] ? match[1] + '～' + match[2]
+      : ATTENDANCE_LESSONS_.find(lesson => lesson.startsWith(match[1] + '～')) || match[1];
+  });
+  return slots.every(Boolean) ? slots.sort().join('/') : '';
+}
+
+function attendanceReport_(data) {
+  const workDate = attendanceDate_(data.workDate);
+  const koma = String(data.koma === 'その他' ? data.komaOther : data.koma || '').trim();
+  const lessons = String(data.lessons || '').trim();
+  const place = String(data.place || '').trim();
+  const memo = String(data.memo || '');
+  if (!workDate || workDate !== data.workDate || !/^\d{1,2}(?:\.\d{1,2})?$/.test(koma) ||
+      Number(koma) <= 0 || !['神領校', '大手町校', 'その他'].includes(place) || memo.length > 2000) return null;
+  const selected = lessons.split('/').map(s => s.trim());
+  if (new Set(selected).size !== selected.length || !selected.every(s => ATTENDANCE_LESSONS_.includes(s))) return null;
+  return { workDate, koma, lessons, place, memo: /^[=+\-@]/.test(memo) ? "'" + memo : memo };
+}
+
+function attendanceKey_(report) {
+  return JSON.stringify([report.workDate, report.place, String(Number(report.koma)), attendanceSlots_(report.lessons)]);
+}
+
+function attendanceSourceRows_(code) {
+  const sheet = SpreadsheetApp.openById(RESPONSE_SS_ID).getSheetByName(RESPONSE_SHEET);
+  const count = sheet.getLastRow() - 1;
+  if (count < 1) return [];
+  const rows = sheet.getRange(2, 1, count, 8).getValues();
+  return rows.filter(row => String(row[7]).trim() === code).map(row => ({
+    workDate: attendanceDate_(row[2], row[0]),
+    place: String(row[6] || '').trim(),
+    koma: String(row[4] || '').normalize('NFKC').trim(),
+    lessons: String(row[3] || '')
+  }));
+}
+
+function attendanceReadback_(code, report) {
+  const key = attendanceKey_(report);
+  const verified = attendanceSourceRows_(code).some(row => attendanceKey_(row) === key);
+  return { status: verified ? 'saved' : 'unconfirmed' };
+}
+
+function attendanceHistory_(code) {
+  const history = new Map();
+  for (const row of attendanceSourceRows_(code)) {
+    if (!row.workDate || !row.place || !row.koma) continue;
+    history.set(attendanceKey_(row), { workDate: row.workDate, place: row.place, koma: row.koma, status: 'saved' });
+  }
+  return { status: 'ok', rows: Array.from(history.values()).sort((a, b) => b.workDate.localeCompare(a.workDate)) };
+}
+
+function attendanceLegacySubmit_(data) {
+  // Keep the older embedded form working while serializing writes from both entry points.
+  const lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    const code = String(data.code || '').trim();
+    const report = attendanceReport_(data);
+    if (report && attendanceSourceRows_(code).some(row => attendanceKey_(row) === attendanceKey_(report))) {
+      const teacher = getTeacherApi_(code);
+      return teacher.ok ? { ok: true, name: teacher.teacher.name } : teacher;
+    }
+    const result = submitAttendanceApi_(report ? Object.assign({}, report, { code }) : data);
+    SpreadsheetApp.flush();
+    return result;
+  } finally {
+    lock.releaseLock();
+  }
+}

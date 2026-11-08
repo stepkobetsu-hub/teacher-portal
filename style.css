@@ -170,3 +170,10 @@ button:focus-visible,
 .receiptHeading{font-size:18px;font-weight:900;margin-bottom:7px}
 .receiptDetails{font-size:14px;white-space:pre-line;line-height:1.7}
 .attendanceReceipt.receiptUncertain{background:#fff7ed;color:#9a3412;border-color:#fdba74}
+
+[data-state="saved"]{background:#ecfdf5;color:#166534;border-color:#86efac}
+[data-state="unconfirmed"]{background:#fff7ed;color:#9a3412;border-color:#fdba74}
+[data-state="error"]{background:#fef2f2;color:#991b1b;border-color:#fca5a5}
+.attendanceHistoryList{list-style:none;margin:8px 0 0;padding:0;max-height:18rem;overflow:auto}
+.attendanceHistoryList li{padding:8px;margin:4px 0;border-radius:6px}
+#attendanceHistoryStatus{margin-top:8px}

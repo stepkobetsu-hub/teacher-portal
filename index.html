@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>個別指導STEP 講師ポータル</title>
-  <link rel="stylesheet" href="style.css?v=20261108-attendance-receipt">
+  <link rel="stylesheet" href="style.css?v=20261108-sheet-readback">
   <link rel="manifest" href="manifest.json?v=20260917-teacher-green">
   <link rel="apple-touch-icon" href="images/app-icon.png?v=20260917-teacher-green">
   <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32.png?v=20260917-teacher-green">
@@ -86,7 +86,9 @@
       <p class="lead">講師コードを入力してください。</p>
       <label>講師コード</label>
       <input id="code" type="text" inputmode="numeric" placeholder="例：7085" autocomplete="username">
-      <button onclick="login()">ログイン</button>
+      <label for="attendancePassword">パスワード</label>
+      <input id="attendancePassword" type="password" autocomplete="current-password" maxlength="128">
+      <button id="attendanceLoginBtn" onclick="login()">ログイン</button>
       <div id="loginMsg" class="noticeMsg hidden"></div>
     </div>
   </section>
@@ -99,9 +101,11 @@
         <div class="teacherCode" id="teacherCodeDisplay">----</div>
         <div class="teacherName" id="teacherNameDisplay">----</div>
       </div>
-      <div id="attendanceReceiptPanel" class="attendanceReceipt hidden" aria-live="polite">
-        <div id="attendanceReceiptStatus" class="receiptHeading"></div>
-        <div id="attendanceReceiptDetails" class="receiptDetails"></div>
+      <div class="attendanceReceipt">
+        <div class="receiptHeading">授業報告の保存履歴</div>
+        <button type="button" onclick="loadAttendanceHistory()">履歴を再照会</button>
+        <div id="attendanceHistoryStatus" role="status"></div>
+        <ul id="attendanceHistoryList" class="attendanceHistoryList"></ul>
       </div>
       <label>出勤日</label>
       <div class="dateBox"><div id="dateText" class="dateText"></div></div>
@@ -151,7 +155,7 @@
   <section id="completePage" class="page hidden">
     <div class="card doneBox">
       <button class="back" onclick="backHome()">← トップへ</button>
-      <div class="doneTitle">送信完了しました</div>
+      <div class="doneTitle">授業報告を保存しました</div>
       <div id="completeMessage" class="doneSub"></div>
       <div id="receiptCompletedDetails" class="attendanceReceipt receiptDetails" role="status"></div>
       <div id="randomMessage" class="randomMessage"></div>
@@ -231,7 +235,7 @@
     <button onclick="hideToast()">OK</button>
   </div>
 </div>
-<script src="script.js?v=20261108-attendance-receipt"></script>
+<script src="script.js?v=20261108-sheet-readback"></script>
 <script src="session.js?v=20261108-auto-login-clean"></script>
 </body>
 </html>
