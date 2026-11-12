@@ -11,6 +11,17 @@
   <link rel="shortcut icon" type="image/png" href="images/favicon.png?v=20260917-teacher-green">
   <meta name="theme-color" content="#15803d">
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+  <style>
+    .menuBtn .fuyouDeadline {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 7px;
+      background: #fff1b6;
+      color: #84251b;
+      font-size: 16px;
+      font-weight: 900;
+    }
+  </style>
 </head>
 <body>
 <main class="app">
@@ -34,6 +45,11 @@
       <div id="greetingText" class="greeting">こんにちは！</div>
       <div class="datePill"><span>📅</span><strong id="homeDate">----</strong></div>
       <div class="menuList">
+        <a class="menuBtn teal" href="https://script.google.com/macros/s/AKfycbwP-pEDbbHB-Ec2xO7BFiVYqwpveTnNVmPJkNV08MPD8iAHHq4S7zPyVxDwFEmaHI9-/exec?view=fuyou2027">
+          <span class="menuIcon" aria-hidden="true">📝</span>
+          <span><strong>２０２７年度扶養控除申告の提出</strong><small class="fuyouDeadline">締切 12月10日（木）</small></span>
+          <b aria-hidden="true">›</b>
+        </a>
         <a class="menuBtn teal" href="./registration.html">
           <span class="menuIcon">📝</span>
           <span><strong>講師登録・変更</strong><small>はじめての登録・登録情報の変更</small></span>
@@ -59,11 +75,6 @@
           <span><strong>夏休み出勤可能日登録</strong><small>夏期講習の出勤可能日を登録</small></span>
           <b>›</b>
         </button>
-        <a class="menuBtn teal" href="https://script.google.com/macros/s/AKfycbwP-pEDbbHB-Ec2xO7BFiVYqwpveTnNVmPJkNV08MPD8iAHHq4S7zPyVxDwFEmaHI9-/exec?view=fuyou2027">
-          <span class="menuIcon" aria-hidden="true">📝</span>
-          <span><strong>２０２７年度扶養控除申告の提出</strong><small>締切 12月10日（木）</small></span>
-          <b aria-hidden="true">›</b>
-        </a>
         <a class="menuBtn purple" href="./salary.html?v=20261029-restore">
           <span class="menuIcon">💰</span>
           <span><strong>給与明細</strong><small>給与明細を表示</small></span>
