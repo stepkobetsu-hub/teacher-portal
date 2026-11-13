@@ -47,7 +47,7 @@
       <div class="menuList">
         <a class="menuBtn teal" href="https://script.google.com/macros/s/AKfycbwP-pEDbbHB-Ec2xO7BFiVYqwpveTnNVmPJkNV08MPD8iAHHq4S7zPyVxDwFEmaHI9-/exec?view=fuyou2027">
           <span class="menuIcon" aria-hidden="true">📝</span>
-          <span><strong>２０２７年度扶養控除申告の提出</strong><small class="fuyouDeadline">締切 12月10日（木）</small></span>
+          <span><strong>２０２７年度扶養控除申告の提出</strong><small class="fuyouDeadline" aria-live="polite">締切を確認中…</small></span>
           <b aria-hidden="true">›</b>
         </a>
         <a class="menuBtn teal" href="./registration.html">
@@ -253,5 +253,49 @@
 </div>
 <script src="script.js?v=20261108-sheet-readback"></script>
 <script src="session.js?v=20261108-auto-login-clean"></script>
+<script>
+(() => {
+  const badge = document.querySelector('.fuyouDeadline');
+  const endpoint = new URL(badge.closest('a').href);
+  endpoint.searchParams.set('view', 'fuyouDeadline');
+  let inFlight = false;
+  let request;
+  let lastCheck = 0;
+  function refreshDeadline() {
+    if (document.hidden || inFlight || Date.now() - lastCheck < 2000) return;
+    lastCheck = Date.now();
+    inFlight = true;
+    const script = document.createElement('script');
+    request = script;
+    endpoint.searchParams.set('_', String(lastCheck));
+    script.src = endpoint.href;
+    const timer = setTimeout(() => finish(true), 10000);
+    function finish(failed) {
+      if (request !== script) return;
+      clearTimeout(timer);
+      request = null;
+      inFlight = false;
+      script.remove();
+      if (failed) {
+        badge.textContent = '締切は申告画面で確認';
+        badge.removeAttribute('data-deadline');
+      }
+    }
+    script.onerror = () => finish(true);
+    script.onload = () => finish(!script.dataset.received);
+    document.head.append(script);
+  }
+  window.stepFuyouDeadline = ({ date, label }) => {
+    if (document.currentScript !== request || !/^20\d{2}-\d{2}-\d{2}$/.test(date) || typeof label !== 'string') return;
+    request.dataset.received = '1';
+    badge.textContent = label;
+    badge.dataset.deadline = date;
+  };
+  refreshDeadline();
+  window.addEventListener('pageshow', refreshDeadline);
+  window.addEventListener('focus', refreshDeadline);
+  document.addEventListener('visibilitychange', refreshDeadline);
+})();
+</script>
 </body>
 </html>
